@@ -68,7 +68,7 @@ lógico del dataset. Ejemplo mínimo:
       "Ly_m": 0.16,
       "sources": [
         {"name": "CPU", "x_m": 0.04, "y_m": 0.08, "width_m": 0.04, "height_m": 0.04},
-        {"name": "GPU", "x_m": 0.15, "y_m": 0.08, "width_m": 0.04, "height_m": 0.04}
+        {"name": "GPU", "x_m": 0.16, "y_m": 0.08, "width_m": 0.04, "height_m": 0.04}
       ]
     }
   }
