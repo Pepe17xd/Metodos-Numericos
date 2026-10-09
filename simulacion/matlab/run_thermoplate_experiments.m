@@ -35,7 +35,8 @@ function report = run_thermoplate_experiments(configPath, outputRoot, timingOpti
     mDirect=thermoplate_metrics(model,xDirect);
     field=thermoplate_field(model,xDirect); writetable(field,fullfile(baseDir,'baseline_field.csv'));
     history=history_table({gs,cg}); writetable(history,fullfile(baseDir,'convergence_history.csv'));
-    states=states_table(model,{gs,cg}); writetable(states,fullfile(baseDir,'representative_states.csv'));
+    export_thermoplate_representative_states(model,{gs,cg}, ...
+        fullfile(baseDir,'representative_states.csv'));
     mGs=thermoplate_metrics(model,gs.x); mCg=thermoplate_metrics(model,cg.x);
     summary=summary_table(model,{gs,cg},[mGs.Tmax_C mCg.Tmax_C],baseTimingStats);
     directRow=table("Sparse direct",cfg.tolerance,1,mDirect.relative_residual, ...
@@ -174,19 +175,6 @@ function H=history_table(results)
     H=table(); for a=1:numel(results)
         r=results{a}; H=[H;table((0:numel(r.history)-1)',repmat(string(r.solver),numel(r.history),1), ...
             r.history(:),'VariableNames',{'iter','solver','rel_residual'})]; %#ok<AGROW>
-    end
-end
-function S=states_table(model,results)
-    S=table();
-    for a=1:numel(results)
-        r=results{a}; ids=unique([1 ceil(numel(r.states)/2) numel(r.states)]);
-        for j=ids
-            state=r.states(j); Tf=model.cfg.Tb*ones(model.ny,model.nx);
-            Tf(2:end-1,2:end-1)=reshape(state.x,model.ny-2,model.nx-2);
-            [X,Y]=meshgrid(model.x,model.y); n=numel(Tf);
-            S=[S;table(repmat(state.iter,n,1),repmat(string(r.solver),n,1),X(:),Y(:),Tf(:), ...
-                'VariableNames',{'iter','solver','x_m','y_m','T_C'})]; %#ok<AGROW>
-        end
     end
 end
 function S=summary_table(m,results,tmax,timingStats)
