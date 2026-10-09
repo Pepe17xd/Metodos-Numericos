@@ -1,0 +1,32 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# MATLAB editor and autosave artifacts
+*.asv
+*.m~
+slprj/
+codegen/
+*.autosave
+
+# Academic report and all generated simulation exports remain local.
+/Latex/
+/simulacion/documentacion/
+/simulacion/figuras/
+/simulacion/resultados/
+/simulacion/pruebas/*.json
+/simulacion/python/figuras/
+
+# Temporary local QA output
+tmp/
+simulacion/python/.qa_figures/
+
+# Local course/source documents and prior submissions; not project deliverables
+/Propuestas/
+/Lineamientos de Proyecto.pdf
+/MN_P1_Grupo_4.pdf
+/Adaptacion_proyecto_metodos_numericos_laptop_termica.pdf
+/ryznykpwwmmc.pdf
