@@ -1,0 +1,50 @@
+function checks = verify_thermoplate_core()
+%VERIFY_THERMOPLATE_CORE Executable checks for assembly and baseline solvers.
+    cfg=load_thermoplate_config(); model=build_thermoplate_model(cfg);
+    [~,flag]=chol(model.A); assert(flag==0,'Matrix failed sparse Cholesky SPD check.');
+    assert(model.symmetryError<1e-14,'Matrix is not symmetric to roundoff.');
+    assert(abs(model.sourcePower.cpu-cfg.cpu.power)<1e-10,'CPU source power mismatch.');
+    assert(abs(model.sourcePower.gpu-cfg.gpu.power)<1e-10,'GPU source power mismatch.');
+    assert(abs(sum(model.sourceQ,'all')*model.dx*model.dy*cfg.thickness- ...
+        (cfg.cpu.power+cfg.gpu.power))<1e-10,'Discrete source quadrature balance failed.');
+    offgrid=cfg; offgrid.cpu.x=0.043; offgrid.cpu.y=0.083;
+    offgrid.cpu.width=0.037; offgrid.cpu.height=0.037;
+    offgrid.gpu.x=0.163; offgrid.gpu.y=0.079;
+    offgrid.gpu.width=0.037; offgrid.gpu.height=0.041;
+    offgridModel=build_thermoplate_model(offgrid,cfg.baselineGrid(1),cfg.baselineGrid(2));
+    assert(abs(offgridModel.sourcePower.cpu-cfg.cpu.power)<1e-10 && ...
+        abs(offgridModel.sourcePower.gpu-cfg.gpu.power)<1e-10, ...
+        'Off-grid source overlap quadrature failed to preserve input powers.');
+    x0=cfg.initialTemperature*ones(model.nUnknowns,1); xd=model.A\model.b;
+    opts=struct('tolerance',cfg.tolerance,'maxIterations',cfg.maxIterations);
+    gs=solve_thermoplate_gs(model.A,model.b,x0,opts);
+    cg=solve_thermoplate_cg(model.A,model.b,x0,opts);
+    assert(strcmp(gs.status,'converged'),'Gauss-Seidel did not converge.');
+    assert(strcmp(cg.status,'converged'),'Conjugate Gradient did not converge.');
+    assert(norm(gs.x-xd,inf)<2e-5,'Gauss-Seidel disagrees with direct reference.');
+    assert(norm(cg.x-xd,inf)<1e-5,'CG disagrees with direct reference.');
+    assert(all(isfinite(gs.x))&&all(isfinite(cg.x)),'Iterative field has nonfinite values.');
+    fld=thermoplate_field(model,xd); edge=fld.x_m==0 | fld.x_m==cfg.Lx | ...
+        fld.y_m==0 | fld.y_m==cfg.Ly;
+    assert(max(abs(fld.T_C(edge)-cfg.Tb))<1e-12,'Dirichlet boundary check failed.');
+    zero=cfg; zero.cpu.power=0; zero.gpu.power=0;
+    cpu=cfg; cpu.gpu.power=0; gpu=cfg; gpu.cpu.power=0;
+    mz=build_thermoplate_model(zero); mc=build_thermoplate_model(cpu); mg=build_thermoplate_model(gpu);
+    tz=mz.A\mz.b; tc=mc.A\mc.b; tg=mg.A\mg.b;
+    assert(norm(xd-(tc+tg-tz),inf)<1e-10,'Temperature response is not linear in source powers.');
+    failOpts=struct('tolerance',1e-14,'maxIterations',1);
+    failed=solve_thermoplate_cg(model.A,model.b,x0,failOpts);
+    assert(~strcmp(failed.status,'converged'),'Nonconvergence case was not detected.');
+    checks=struct('passed',true,'nx',model.nx,'ny',model.ny, ...
+        'unknowns',model.nUnknowns,'symmetry_relative_error',model.symmetryError, ...
+        'cpu_materialized_power_W',model.sourcePower.cpu, ...
+        'gpu_materialized_power_W',model.sourcePower.gpu, ...
+        'offgrid_source_power_check_passed',true, ...
+        'gauss_seidel_iterations',gs.iterations,'cg_iterations',cg.iterations, ...
+        'gauss_seidel_relative_residual',gs.relativeResidual, ...
+        'cg_relative_residual',cg.relativeResidual, ...
+        'boundary_max_error_C',max(abs(fld.T_C(edge)-cfg.Tb)), ...
+        'linearity_max_error_C',norm(xd-(tc+tg-tz),inf), ...
+        'nonconvergence_status',failed.status, ...
+        'direct_Tmax_C',thermoplate_metrics(model,xd).Tmax_C);
+end
