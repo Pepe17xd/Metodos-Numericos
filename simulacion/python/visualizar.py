@@ -271,21 +271,35 @@ def figure_geometry(meta: dict[str, Any], out: Path) -> bool:
 
 
 def figure_field(field: pd.DataFrame, out: Path) -> None:
-    """Genera el mapa térmico y la superficie 3D del campo MATLAB."""
-    pivot = field.pivot_table(index="y", columns="x", values="temperature", aggfunc="mean").sort_index().sort_index(axis=1)
+    """Genera dos vistas del campo de temperatura exportado por MATLAB."""
+    pivot = field.pivot(index="y", columns="x", values="temperature").sort_index().sort_index(axis=1)
     x, y, z = pivot.columns.to_numpy(float), pivot.index.to_numpy(float), pivot.to_numpy(float)
+    if not np.isfinite(z).all():
+        raise InputError("El campo térmico exportado contiene nodos faltantes o no finitos.")
     X, Y = np.meshgrid(x, y)
-    fig, ax = plt.subplots(figsize=(6.3, 4.1))
-    im = ax.pcolormesh(X, Y, z, shading="auto", cmap="inferno")
+    vmin, vmax = float(z.min()), float(z.max())
+    fig, ax = plt.subplots(figsize=(6.3, 4.1), layout="constrained")
+    im = ax.pcolormesh(X, Y, z, shading="auto", cmap="inferno", vmin=vmin, vmax=vmax)
     fig.colorbar(im, ax=ax, label="Temperatura [°C]")
     ax.set(xlabel="x [m]", ylabel="y [m]", title="Campo estacionario de temperatura")
     save(fig, out, "02_mapa_termico")
 
-    fig = plt.figure(figsize=(6.5, 4.4))
+    # Se conservan los nodos exportados; la superficie no interpola ni resuelve el modelo.
+    fig = plt.figure(figsize=(3.55, 3.25), layout="constrained")
     ax = fig.add_subplot(111, projection="3d")
-    surf = ax.plot_surface(X, Y, z, cmap="inferno", linewidth=0, antialiased=True)
-    fig.colorbar(surf, ax=ax, shrink=.65, pad=.1, label="Temperatura [°C]")
-    ax.set(xlabel="x [m]", ylabel="y [m]", zlabel="Temperatura [°C]", title="Superficie estacionaria de temperatura")
+    surf = ax.plot_surface(
+        X, Y, z, cmap="inferno", vmin=vmin, vmax=vmax,
+        rcount=z.shape[0], ccount=z.shape[1], linewidth=0, antialiased=True,
+    )
+    ax.set_proj_type("ortho")
+    ax.view_init(elev=29, azim=-132)
+    ax.set_box_aspect((float(x[-1] - x[0]), float(y[-1] - y[0]), 0.58 * float(x[-1] - x[0])))
+    ax.set(xlabel="x [m]", ylabel="y [m]", zlabel="Temperatura [°C]")
+    ax.tick_params(labelsize=7)
+    ax.xaxis.labelpad = 1
+    ax.yaxis.labelpad = 1
+    ax.zaxis.labelpad = 2
+    fig.colorbar(surf, ax=ax, shrink=.72, pad=.08, aspect=18, label="Temperatura [°C]")
     save(fig, out, "03_superficie_3d")
 
 
@@ -339,34 +353,63 @@ def figure_history(results: Results, out: Path) -> tuple[bool, bool]:
     for col in ("iteration", "x", "y", "temperature"):
         state[col] = pd.to_numeric(state[col], errors="coerce")
     state = state.dropna(subset=["iteration", "x", "y", "temperature"])
-    solvers = list(state["solver"].dropna().astype(str).unique())
-    if not solvers:
-        results.warnings.append("Estados intermedios: no hay solucionadores identificados.")
+    solver_values = state["solver"].dropna().astype(str)
+    solver_lookup = {value.casefold(): value for value in solver_values.unique()}
+    solvers = [solver_lookup.get(name.casefold()) for name in ("Gauss-Seidel", "Conjugate Gradient")]
+    if any(name is None for name in solvers):
+        results.warnings.append("Estados intermedios: se requieren Gauss-Seidel y Gradiente Conjugado.")
         return True, False
-    fig, axs = plt.subplots(len(solvers), 3, figsize=(9.0, 2.8*len(solvers)), squeeze=False,
-                            sharex=True, sharey=True, layout="constrained")
+    initial_values = state.loc[state["iteration"] == 0, "temperature"]
+    if initial_values.empty or not np.allclose(initial_values.to_numpy(), 25.0, rtol=0, atol=1e-10):
+        results.warnings.append("Estados intermedios: el estado inicial MATLAB no es uniforme a 25 °C.")
+        return True, False
+
+    # Exigir tres estados por método evita que una exportación incompleta se
+    # presente como una comparación entre etapas equivalentes.
+    snapshots: dict[str, list[tuple[int, pd.DataFrame]]] = {}
+    for solver_name in solvers:
+        method = state[state["solver"].astype(str) == solver_name]
+        iterations = sorted(int(value) for value in method["iteration"].unique())
+        if len(iterations) != 3 or iterations[0] != 0 or iterations[1] <= 0 or iterations[2] <= iterations[1]:
+            results.warnings.append(
+                f"Estados intermedios: {display_solver(solver_name)} debe incluir k=0, un estado medio y el convergido."
+            )
+            return True, False
+        panels: list[tuple[int, pd.DataFrame]] = []
+        for iteration in iterations:
+            snap = method[method["iteration"] == iteration]
+            panel = snap.pivot(index="y", columns="x", values="temperature").sort_index().sort_index(axis=1)
+            if panel.empty or not np.isfinite(panel.to_numpy()).all():
+                results.warnings.append(f"Estado k={iteration} de {display_solver(solver_name)} incompleto o no finito.")
+                return True, False
+            panels.append((iteration, panel))
+        snapshots[solver_name] = panels
+
     vmin, vmax = float(state["temperature"].min()), float(state["temperature"].max())
+    fig, axs = plt.subplots(2, 3, figsize=(9.2, 5.6), squeeze=False,
+                            sharex=True, sharey=True, layout="constrained")
     im = None
     for row, solver_name in enumerate(solvers):
-        method = state[state["solver"].astype(str) == solver_name]
-        iters = sorted(method["iteration"].unique())
-        if len(iters) > 3:
-            iters = [iters[round(i*(len(iters)-1)/2)] for i in range(3)]
-        for col, ax in enumerate(axs[row]):
-            if col >= len(iters):
-                ax.set_visible(False)
-                continue
-            iteration = iters[col]
-            snap = method[method["iteration"] == iteration]
-            p = snap.pivot_table(index="y", columns="x", values="temperature", aggfunc="mean").sort_index().sort_index(axis=1)
-            im = ax.pcolormesh(p.columns, p.index, p.to_numpy(), shading="auto", cmap="inferno", vmin=vmin, vmax=vmax)
-            ax.set_title(f"Iteración {int(iteration)}")
-            if row == len(solvers)-1: ax.set_xlabel("x [m]")
-        axs[row][0].set_ylabel(f"{display_solver(solver_name)}\ny [m]")
+        for col, (iteration, panel) in enumerate(snapshots[solver_name]):
+            ax = axs[row, col]
+            im = ax.pcolormesh(
+                panel.columns, panel.index, panel.to_numpy(), shading="auto",
+                cmap="inferno", vmin=vmin, vmax=vmax,
+            )
+            stage = ("Estado inicial" if col == 0 else
+                     "Aproximación intermedia" if col == 1 else "Estado convergido")
+            ax.set_title(f"{stage}\n$k={iteration}$")
+            if row == 1:
+                ax.set_xlabel("x [m]")
+        axs[row, 0].set_ylabel(f"{display_solver(solver_name)}\ny [m]")
     if im is None:
         plt.close(fig); return True, False
-    fig.colorbar(im, ax=axs.ravel().tolist(), label="Temperatura [°C]", shrink=.8)
-    fig.suptitle("Aproximaciones espaciales (iteraciones algebraicas)")
+    colorbar_ticks = [vmin, 40.0, 55.0, 70.0, vmax]
+    fig.colorbar(
+        im, ax=axs.ravel().tolist(), label="Temperatura [°C]", shrink=.88,
+        pad=.025, ticks=colorbar_ticks, format="%.1f",
+    )
+    fig.suptitle("Estados de las aproximaciones algebraicas", fontsize=13)
     save(fig, out, "04_evolucion_aproximaciones")
     return True, True
 
