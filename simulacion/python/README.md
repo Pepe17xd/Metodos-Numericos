@@ -1,4 +1,8 @@
-# Visualización científica THERMOPLATE
+# Visualización científica del proyecto CC2104
+
+El identificador interno `THERMOPLATE` se conserva en algunos nombres de
+funciones y archivos; el título académico del proyecto está en el README
+principal.
 
 `visualizar.py` genera figuras estáticas a partir de archivos exportados por
 MATLAB. Python no ensambla matrices, resuelve el sistema térmico ni modifica los

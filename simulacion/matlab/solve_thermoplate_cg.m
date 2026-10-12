@@ -4,6 +4,8 @@ function out = solve_thermoplate_cg(A,b,x0,opts)
 %   pcg. opts may contain tolerance, maxIterations, and checkpointFractions.
 %   The reported residual is ||b-A*x||_2/||b||_2, using denominator one
 %   only for the zero right-hand side.
+%   For f(x)=0.5*x'*A*x-b'*x, r=b-A*x is minus the gradient. The search
+%   directions combine the current residual with the preceding direction.
 % The routine checks positive curvature and reports breakdown rather than
 % silently continuing when assumptions or floating-point arithmetic fail.
     if nargin<4, opts=struct(); end
@@ -17,7 +19,8 @@ function out = solve_thermoplate_cg(A,b,x0,opts)
     if rel<=opts.tolerance
         out=struct('solver','Conjugate Gradient','x',x,'iterations',0, ...
             'relativeResidual',rel,'time_s',0,'status','converged', ...
-            'history',history(1),'states',states,'tolerance',opts.tolerance); return;
+            'history',history(1),'states',states,'tolerance',opts.tolerance, ...
+            'relativeStepError',NaN); return;
     end
     t=tic;
     for iter=1:opts.maxIterations
@@ -36,7 +39,8 @@ function out = solve_thermoplate_cg(A,b,x0,opts)
     if states(end).iter~=nDone, states(end+1)=struct('iter',nDone,'x',x); end
     out=struct('solver','Conjugate Gradient','x',x,'iterations',nDone, ...
         'relativeResidual',relExact,'time_s',elapsed,'status',status, ...
-        'history',history,'states',states,'tolerance',opts.tolerance);
+        'history',history,'states',states,'tolerance',opts.tolerance, ...
+        'relativeStepError',NaN);
 end
 
 function o=solver_options(o)

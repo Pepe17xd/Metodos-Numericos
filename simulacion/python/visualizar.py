@@ -64,6 +64,16 @@ def display_solver(value: Any) -> str:
     return SOLVER_LABELS.get(raw.casefold(), raw)
 
 
+def display_stress_case(value: Any) -> str:
+    """Acorta y traduce los dos casos de estrés definidos por MATLAB."""
+    raw = str(value).strip()
+    labels = {
+        "extreme_positive_1000x": "Potencias × 1000",
+        "nonphysical_negative_cpu": "CPU negativa",
+    }
+    return labels.get(raw.casefold(), raw.replace("_", " "))
+
+
 def norm(value: Any) -> str:
     """Normaliza un nombre de columna para comparar alias sin distinguir formato."""
     return re.sub(r"[^a-z0-9]+", "", str(value).strip().lower())
@@ -577,10 +587,10 @@ def figure_stress(results: Results, out: Path) -> bool:
             good = g["_res"].notna() & (g["_res"] > 0) & (g["_tol"] > 0)
             if good.any():
                 g = g.loc[good].sort_values("_tol")
-                ax.loglog(g["_tol"], g["_res"], marker="o", label=str(name) if name else "Residuo")
+                ax.loglog(g["_tol"], g["_res"], marker="o", label=display_solver(name) if name else "Residuo")
                 plotted = True
     if plotted:
-        ax.set(xlabel="Tolerancia solicitada", ylabel="Residuo relativo alcanzado", title="Residuo vs tolerancia")
+        ax.set(xlabel="Tolerancia solicitada", ylabel="Residuo relativo alcanzado", title="Residuo relativo frente a tolerancia")
         ax.legend(title="Solucionador" if solver else None)
     else:
         status = find_col(df, "status")
@@ -599,9 +609,26 @@ def figure_stress(results: Results, out: Path) -> bool:
                 pivot = other.pivot_table(index=case, columns=solver, values="_time", aggfunc="mean")
             else:
                 pivot = other.groupby(case)["_time"].mean().to_frame("Tiempo")
-            pivot.plot(kind="bar", ax=ax_time)
-            ax_time.set(ylabel="Tiempo computacional [s]", title="Casos extremos/no físicos")
-            ax_time.tick_params(axis="x", rotation=25)
+            cases = list(pivot.index)
+            positions = np.arange(len(cases), dtype=float)
+            solver_names = list(pivot.columns)
+            width = 0.22
+            offsets = (np.arange(len(solver_names)) - (len(solver_names) - 1) / 2) * width
+            for offset, name in zip(offsets, solver_names):
+                values = pd.to_numeric(pivot[name], errors="coerce").to_numpy(dtype=float)
+                valid = np.isfinite(values) & (values > 0)
+                x = positions + offset
+                ax_time.plot(x[valid], values[valid], marker="o", linestyle="none",
+                             label=display_solver(name))
+                for xx, yy in zip(x[valid], values[valid]):
+                    ax_time.annotate(f"{yy:.2g}", (xx, yy), xytext=(0, 5),
+                                     textcoords="offset points", ha="center", fontsize=8)
+            ax_time.set_xticks(positions, [display_stress_case(value) for value in cases])
+            ax_time.set_yscale("log")
+            ax_time.set(ylabel="Mediana del tiempo computacional [s]",
+                        title="Tiempo en casos extremos/no físicos")
+            if solver_names:
+                ax_time.legend(title="Solucionador")
     ax.grid(True, which="both", alpha=.25); ax_time.grid(True, axis="y", alpha=.25)
     save(fig, out, "09_estres_numerico")
     return True

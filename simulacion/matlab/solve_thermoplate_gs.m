@@ -1,7 +1,8 @@
 function out = solve_thermoplate_gs(A,b,x0,opts)
 %SOLVE_THERMOPLATE_GS Explicit lexicographic Gauss--Seidel iteration.
-%   Updates x from (D+L)x_new = b-U*x_old, where A=D+L+U. For the
-%   five-point plate matrix the lower-triangular solve is sparse. opts may
+%   Uses the course convention A=D-L-U, with L=-tril(A,-1) and
+%   U=-triu(A,1), so (D-L)*x_new = U*x_old+b. The sparse lower-
+%   triangular system is solved directly; no inverse is formed. opts may
 %   contain tolerance, maxIterations, residualCheckInterval, and
 %   checkpointFractions. The returned residual is ||b-A*x||_2/||b||_2
 %   (with denominator one only when b is exactly zero).
@@ -9,15 +10,27 @@ function out = solve_thermoplate_gs(A,b,x0,opts)
     opts=solver_options(opts); n=numel(b); x=x0(:);
     assert(isequal(size(A),[n n]) && numel(x)==n,'A, b, and x0 sizes do not match.');
     d=diag(A); assert(all(isfinite(d))&&all(d~=0),'A has a zero/nonfinite diagonal.');
-    M=spdiags(d,0,n,n)+tril(A,-1); U=triu(A,1);
+    D=spdiags(d,0,n,n);
+    L=-tril(A,-1);
+    U=-triu(A,1);
+    M=D-L;
     bn=norm(b); if bn==0, bn=1; end
     checkpoints=iteration_checkpoints(opts);
     history=nan(opts.maxIterations+1,1); history(1)=norm(b-A*x)/bn;
     states=struct('iter',{},'x',{}); states(1)=struct('iter',0,'x',x);
+    stepHistory=nan(opts.maxIterations,1);
     if history(1)<=opts.tolerance, out=finish('converged',0,0); return; end
     status='max_iterations'; t=tic;
     for iter=1:opts.maxIterations
-        x=M\(b-U*x);
+        xOld=x;
+        x=M\(U*x+b);
+        stepNorm=norm(x-xOld,inf);
+        currentNorm=norm(x,inf);
+        if currentNorm==0
+            if stepNorm==0, stepHistory(iter)=0; else, stepHistory(iter)=Inf; end
+        else
+            stepHistory(iter)=stepNorm/currentNorm;
+        end
         if mod(iter,opts.residualCheckInterval)==0 || iter==opts.maxIterations || any(checkpoints==iter)
             rel=norm(b-A*x)/bn;
             history(iter+1)=rel;
@@ -31,11 +44,14 @@ function out = solve_thermoplate_gs(A,b,x0,opts)
     if states(end).iter~=nDone, states(end+1)=struct('iter',nDone,'x',x); end
     out=struct('solver','Gauss-Seidel','x',x,'iterations',nDone, ...
         'relativeResidual',norm(b-A*x)/bn,'time_s',elapsed,'status',status, ...
-        'history',history,'states',states,'tolerance',opts.tolerance);
+        'history',history,'states',states,'tolerance',opts.tolerance, ...
+        'relativeStepError',stepHistory(nDone), ...
+        'relativeStepErrorHistory',stepHistory(1:nDone));
     function o=finish(st,it,tm)
         o=struct('solver','Gauss-Seidel','x',x,'iterations',it, ...
             'relativeResidual',history(1),'time_s',tm,'status',st, ...
-            'history',history(1),'states',states,'tolerance',opts.tolerance);
+            'history',history(1),'states',states,'tolerance',opts.tolerance, ...
+            'relativeStepError',NaN,'relativeStepErrorHistory',[]);
     end
 end
 

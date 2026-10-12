@@ -1,45 +1,38 @@
-# Simulación MATLAB
+# Flujo MATLAB
 
-Este directorio implementa el modelo estacionario de conducción, los solucionadores explícitos, los experimentos y la exportación de resultados. Requiere MATLAB R2025a; no requiere Optimization Toolbox para los dos métodos iterativos propios.
+MATLAB ensambla y resuelve el modelo de conducción estacionaria de una placa idealizada. `01_escenario_base.mlx` es el Live Script didáctico principal; sigue el problema desde la ecuación hasta los archivos que consume Python. `02_experimentos_completos.mlx` ejecuta por separado el conjunto de experimentos.
 
 ## Ejecución
 
-Desde la raíz del proyecto:
+Desde la raíz del repositorio:
 
 ```matlab
 addpath(fullfile(pwd, 'simulacion', 'matlab'))
 checks = verify_thermoplate_core();
-disp(checks)
+assert(checks.passed)
 run_thermoplate_experiments();
 report = write_thermoplate_validation_report();
 ```
 
-También puede ejecutarse en modo batch desde PowerShell:
+Para abrir el Live Script académico en MATLAB, abre `01_escenario_base.mlx` y selecciona **Run**. También puede ejecutarse en modo batch:
 
 ```powershell
-matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); checks=verify_thermoplate_core(); disp(checks); run_thermoplate_experiments(); report=write_thermoplate_validation_report();"
+matlab -batch "matlab.internal.liveeditor.executeAndSave(fullfile(pwd,'simulacion','matlab','01_escenario_base.mlx'));"
 ```
 
-Los Live Scripts `01_escenario_base.mlx` y `02_experimentos_completos.mlx` presentan la ejecución documentada paso a paso. Las funciones `.m` son la implementación compartida por los scripts y las pruebas.
+## Responsabilidades
 
-## Organización
+- `../configuracion/modelo_base.json` mantiene los parámetros compartidos.
+- `thermoplate_config.m`, `load_thermoplate_config.m` validan la configuración.
+- `build_thermoplate_model.m` construye malla, fuentes, matriz dispersa \(A\) y vector \(b\), incorporando Dirichlet.
+- `solve_thermoplate_gs.m` implementa GS lexicográfico con la convención del curso \(A=D-L-U\) y una resolución triangular dispersa.
+- `solve_thermoplate_cg.m` implementa las recurrencias explícitas de Gradiente Conjugado; no usa `pcg`.
+- `run_thermoplate_experiments.m` corre el caso base, convergencia, refinamiento, sensibilidad, estrés y exportaciones.
+- `verify_thermoplate_core.m` comprueba potencias, frontera, simetría, definitud positiva, convergencia, linealidad y referencia directa.
+- `write_thermoplate_validation_report.m` reúne los resultados en un reporte JSON.
 
-- `thermoplate_config.m`, `load_thermoplate_config.m`: parámetros y validación de configuración.
-- `build_thermoplate_model.m`: malla, cuadratura de fuentes, ensamble disperso de \(A\) y \(b\), y grados de libertad interiores.
-- `solve_thermoplate_gs.m`, `solve_thermoplate_cg.m`: Gauss–Seidel lexicográfico y Gradiente Conjugado explícitos.
-- `thermoplate_field.m`, `thermoplate_metrics.m`: reconstrucción del campo completo y métricas.
-- `run_thermoplate_experiments.m`: escenario base, refinamiento, sensibilidad, estrés y exportaciones.
-- `verify_thermoplate_core.m`: controles de simetría, positividad, frontera, potencia, linealidad, residuos y fallo esperado por máximo de iteraciones.
-- `write_thermoplate_validation_report.m`: reporte JSON consolidado.
+El residuo relativo es el criterio común de parada. GS también registra el error relativo entre iteraciones como indicador complementario; este no altera la tolerancia ni las iteraciones reportadas.
 
-## Algoritmos y validación
+## Exportaciones
 
-El sistema usa un stencil de cinco puntos para \(-\nabla^2 T=q'''/k\). Las temperaturas de Dirichlet se fijan en el borde y se trasladan al vector derecho. Las fuentes rectangulares usan pesos trapezoidales en los bordes para que la integral discreta corresponda a la potencia configurada.
-
-Gauss–Seidel actualiza en orden lexicográfico usando la estructura dispersa; CG aplica productos matriz-vector y sus recurrencias estándar. Ninguno reemplaza el algoritmo solicitado por una llamada directa a `pcg`. La división dispersa de MATLAB se usa como referencia algebraica independiente.
-
-La tolerancia del caso base es \(10^{-8}\). Para los ensayos de tiempo, cada configuración tuvo una corrida de calentamiento y tres corridas medidas. Se exportan los tiempos individuales, iteraciones, residuos y estado; las tablas resumen mediana, desviación estándar e IQR. Esta metodología reduce el efecto de una sola medición, pero los tiempos siguen dependiendo del equipo y la carga del sistema.
-
-## Salidas
-
-Las exportaciones se escriben bajo `simulacion/resultados/`: CSV para tablas y tiempos individuales, JSON para manifiestos y metadatos, y MAT para datos MATLAB. El resumen de ejecución está en `simulacion/pruebas/reporte_validacion.json`. El pipeline Python consume estos resultados para producir figuras; MATLAB sigue siendo la fuente de los datos físicos.
+Los datos se escriben en `../resultados/` como CSV, JSON y MAT. El reporte de validación se guarda en `../pruebas/reporte_validacion.json`. El módulo Python solo lee estas salidas para crear figuras. Los tiempos se reportan por repetición y dependen del equipo y de la carga de la sesión.
