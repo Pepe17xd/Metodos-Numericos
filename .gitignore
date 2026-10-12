@@ -12,13 +12,28 @@ slprj/
 codegen/
 *.autosave
 
-# Academic report and all generated simulation exports remain local.
-/Latex/
+# Academic source documents and prior submissions remain local.
 /simulacion/documentacion/
-/simulacion/figuras/
-/simulacion/resultados/
-/simulacion/pruebas/*.json
 /simulacion/python/figuras/
+
+# Keep the paper source and final paper; exclude LaTeX build output and poster.
+/Latex/
+!/Latex/
+/Latex/*
+!/Latex/main.tex
+!/Latex/MN P2 Grupo 4.pdf
+!/Latex/bibliografia/
+!/Latex/config/
+!/Latex/imagenes/
+!/Latex/secciones/
+/Latex/bibliografia/*
+!/Latex/bibliografia/main.bib
+/Latex/config/*
+!/Latex/config/*.tex
+/Latex/imagenes/*
+!/Latex/imagenes/logo_utec.png
+/Latex/secciones/*
+!/Latex/secciones/*.tex
 
 # Temporary local QA output
 tmp/

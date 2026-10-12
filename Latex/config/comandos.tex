@@ -1,0 +1,45 @@
+% ============================================================
+% CONTROL DEL AVANCE Y COMANDOS PROPIOS
+% ============================================================
+
+% Seleccionar un unico valor entero:
+% 1 = Avance 1
+% 2 = Avance 2 / primera entrega
+% 3 = Avance 3
+% 4 = Avance 4 / paper final
+\providecommand{\avanceActual}{4}
+
+% Imprime el segundo argumento desde el avance indicado en adelante.
+% Ejemplo: \incluirDesdeAvance{3}{contenido visible desde el avance 3}
+\newcommand{\incluirDesdeAvance}[2]{%
+  \ifnum\avanceActual<#1\relax
+  \else
+    #2%
+  \fi
+}
+
+% ============================================================
+% AJUSTES APA 7 COMPATIBLES CON ELSARTICLE
+% ============================================================
+
+% Aplicar después del frontmatter para no alterar portada, título, autores,
+% afiliaciones, resumen ni palabras clave.
+\newcommand{\activarFormatoCuerpoAPA}{%
+  \setlength{\parindent}{1.27cm}%
+  \setlength{\parskip}{0pt}%
+}
+
+% biblatex usa \bibhang para la sangría francesa de cada referencia.
+\newcommand{\prepararReferenciasAPA}{%
+  \setlength{\parindent}{0pt}%
+  \setlength{\bibhang}{1.27cm}%
+  \setlength{\bibitemsep}{0pt}%
+}
+
+% Infraestructura recomendada para tablas:
+% \begin{threeparttable}
+%   \caption{Título claro de la tabla}
+%   \begin{tabular}{...} ... \toprule ... \bottomrule \end{tabular}
+%   \begin{tablenotes}\item \textit{Nota.} ... \end{tablenotes}
+% \end{threeparttable}
+% No usar líneas verticales ni sombreado salvo justificación académica.

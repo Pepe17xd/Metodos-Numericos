@@ -1,0 +1,134 @@
+\section{Metodolog\'ia}
+
+\subsection{Modelo del sistema}
+
+Se modela una placa electr\'onica idealizada como un dominio rectangular bidimensional $\Omega=(0,L_x)\times(0,L_y)$, homog\'eneo e is\'otropo, de espesor $e$ y conductividad t\'ermica constante $k$. El calor se transfiere por conducci\'on y la distribuci\'on se estudia en estado estacionario. Bajo estas condiciones, el balance de energ\'ia con generaci\'on volum\'etrica interna se expresa como
+\begin{equation}
+\frac{\partial^2 T}{\partial x^2}
++\frac{\partial^2 T}{\partial y^2}
++\frac{q(x,y)}{k}=0,\qquad (x,y)\in\Omega,
+\label{eq:poisson-thermoplate}
+\end{equation}
+donde $T(x,y)$ es la temperatura, $q(x,y)$ es la generaci\'on de calor por unidad de volumen ($\mathrm{W\,m^{-3}}$) y $k$ se expresa en $\mathrm{W\,m^{-1}\,K^{-1}}$. La variaci\'on de temperatura puede expresarse indistintamente en K o $^\circ$C. Se prescribe una condici\'on de Dirichlet uniforme,
+\begin{equation}
+T=T_b \quad \text{en } \partial\Omega,
+\label{eq:dirichlet}
+\end{equation}
+que fija la temperatura del contorno durante cada simulaci\'on.
+
+La generaci\'on se concentra en dos regiones rectangulares interiores, asociadas de manera idealizada con CPU y GPU. Para una fuente $s$ de potencia $P_s$, huella $w_s\times h_s$ y espesor $e$, se asigna $q_s=P_s/(w_sh_se)$ dentro de la regi\'on correspondiente y cero fuera de ella. Esta representaci\'on prescribe fuentes localizadas en la placa; no modela los componentes, sus materiales ni su disipaci\'on real.
+
+Los par\'ametros del escenario base son $L_x=0.24$ m, $L_y=0.16$ m, $e=0.002$ m, $k=50$ W m$^{-1}$ K$^{-1}$ y $T_b=25\ ^\circ$C. Las dos huellas miden $0.04\times0.04$ m: CPU en $(0.04,0.08)$ m, con $P_{CPU}=12$ W, y GPU en $(0.16,0.08)$ m, con $P_{GPU}=18$ W. Por tanto, sus generaciones volum\'etricas son, respectivamente, $3.75\times10^6$ y $5.625\times10^6$ W m$^{-3}$. Estos valores son par\'ametros de simulaci\'on definidos para el proyecto; no son mediciones de una laptop ni valores tomados del art\'iculo base.
+
+\subsection{Supuestos y simplificaciones}
+
+El modelo supone un material homog\'eneo e is\'otropo, conductividad constante, geometr\'ia plana y transferencia de calor por conducci\'on bidimensional en r\'egimen estacionario. La generaci\'on interna se considera uniforme dentro de cada huella rectangular y nula fuera de ellas. La temperatura de contorno permanece fija. Se omiten convecci\'on, radiaci\'on, ventiladores, disipadores, resistencia de contacto, variaci\'on de propiedades, anisotrop\'ia, transitorios y la estructura multicapa de una placa real. Estas hip\'otesis permiten estudiar el problema de conducci\'on y su soluci\'on algebraica, pero limitan cualquier interpretaci\'on de las temperaturas como predicciones operativas de una laptop.
+
+\subsection{M\'etodos num\'ericos empleados}
+
+\subsubsection{M\'etodo de Diferencias Finitas}
+
+El M\'etodo de Diferencias Finitas (MDF) aproxima las derivadas de la ecuaci\'on diferencial a partir de temperaturas en nodos vecinos. Se utiliza porque convierte el balance continuo de conducci\'on en ecuaciones algebraicas locales que pueden ensamblarse y resolverse num\'ericamente. En continuidad con la Primera Entrega, primero se presenta la malla uniforme con $h=\Delta x=\Delta y$. Para un nodo interior $(i,j)$, las diferencias centrales de segundo orden son
+\begin{align}
+\frac{\partial^2T}{\partial x^2}\bigg|_{i,j}
+&\approx \frac{T_{i+1,j}-2T_{i,j}+T_{i-1,j}}{h^2},\\
+\frac{\partial^2T}{\partial y^2}\bigg|_{i,j}
+&\approx \frac{T_{i,j+1}-2T_{i,j}+T_{i,j-1}}{h^2}.
+\end{align}
+Al sustituir ambas expresiones en la ecuaci\'on gobernante~\eqref{eq:poisson-thermoplate} y despejar $T_{i,j}$ se obtiene la f\'ormula nodal de la Primera Entrega:
+\begin{equation}
+\begin{aligned}
+T(i,j)=\frac{1}{4}\Bigl[\,&T(i+1,j)+T(i-1,j)\\
+&+T(i,j+1)+T(i,j-1)+\frac{q(i,j)h^2}{k}\,\Bigr].
+\end{aligned}
+\label{eq:nodal-uniforme}
+\end{equation}
+El divisor cuatro afecta a la suma completa de los cuatro vecinos y el t\'ermino de generaci\'on. La expresi\'on muestra que la temperatura nodal depende del promedio de los vecinos, corregido por el calor generado en el volumen asociado al nodo.
+
+La ecuaci\'on~\eqref{eq:nodal-uniforme} conserva la formulaci\'on de la entrega original. \citet{santos2022finite} presentan la ecuaci\'on general de conducci\'on transitoria con generaci\'on (7), el caso estacionario sin generaci\'on (8), las aproximaciones centrales (9)--(10) y la forma nodal promedio sin generaci\'on (11), pp.~508--509. En su ecuaci\'on (14), para el caso con generaci\'on, la expresi\'on impresa suma los cuatro vecinos y a\~nade $q\Delta x^2/k$, pero no muestra un divisor global igual a cuatro. Al sustituir las diferencias centrales en el balance estacionario con $q$ volum\'etrico, la igualdad exige despejar $4T_{i,j}$ y dividir toda la suma por cuatro, como en~\eqref{eq:nodal-uniforme}. Por ello, la ecuaci\'on (14) del art\'iculo parece contener una omisi\'on algebraica o tipogr\'afica y no se reproduce literalmente aqu\'i. La ecuaci\'on (11), sin generaci\'on, s\'i coincide con el promedio de los cuatro vecinos. La placa rectangular con fuentes localizadas CPU/GPU, sus par\'ametros y la comparaci\'on de Gauss--Seidel y Gradiente Conjugado son adaptaciones e implementaciones propias de este proyecto, no aportes atribuidos a ese art\'iculo.
+
+Como extensi\'on para mallas con espaciamientos distintos, las mismas diferencias centrales aplicadas a~\eqref{eq:poisson-thermoplate} dan
+\begin{equation}
+\left(\frac{2}{\Delta x^2}+\frac{2}{\Delta y^2}\right)T_{i,j}
+-\frac{T_{i-1,j}+T_{i+1,j}}{\Delta x^2}
+-\frac{T_{i,j-1}+T_{i,j+1}}{\Delta y^2}
+=\frac{q_{i,j}}{k}.
+\label{eq:stencil-anisotropico}
+\end{equation}
+Al despejar $T_{i,j}$ en~\eqref{eq:stencil-anisotropico} se obtiene una media ponderada por $1/\Delta x^2$ y $1/\Delta y^2$; al imponer $\Delta x=\Delta y=h$, se recupera~\eqref{eq:nodal-uniforme}. Esta extensi\'on permite usar la malla rectangular del proyecto sin cambiar la ecuaci\'on f\'isica.
+
+Para la malla base de $49\times33$ nodos, $\Delta x=\Delta y=0.005$ m y quedan $47\cdot31=1457$ nodos interiores desconocidos. En las cuatro mallas de estudio, las huellas de las fuentes se alinean con nodos. La discontinuidad de cada fuente se integra con pesos trapezoidales en los bordes de su huella: medio peso en cada borde y un cuarto en cada esquina. Con ello, la potencia discretizada satisface $\sum_{i,j}q_{i,j}\Delta x\Delta y\,e=P_s$ para cada fuente y cada resoluci\'on, de acuerdo con la conservaci\'on del t\'ermino integrado de generaci\'on.
+
+Al aplicar la ecuaci\'on nodal en todos los nodos interiores y trasladar al segundo miembro las temperaturas prescritas de los nodos de contorno, la discretizaci\'on da lugar al sistema lineal
+\begin{equation}
+A\mathbf{T}=\mathbf{b},
+\label{eq:sistema-discreto}
+\end{equation}
+donde $\mathbf{T}$ contiene las temperaturas interiores desconocidas, $A$ representa el operador discreto negativo del laplaciano y $\mathbf{b}$ incorpora la generaci\'on interna y las contribuciones de Dirichlet. As\'i, la forma matricial es consecuencia del MDF y no sustituye la ecuaci\'on nodal. La matriz dispersa es sim\'etrica definida positiva para la malla conectada con temperatura prescrita en el contorno; esta propiedad permite aplicar Gradiente Conjugado.
+
+\subsubsection{M\'etodo de Gauss--Seidel}
+
+Gauss--Seidel (GS) actualiza las temperaturas secuencialmente en el sistema~\eqref{eq:sistema-discreto}. Se adopta la convenci\'on del laboratorio del curso
+\begin{equation}
+\begin{aligned}
+A&=D-L-U,\\
+D&=\operatorname{diag}(\operatorname{diag}(A)),\\
+L&=-\operatorname{tril}(A,-1),\qquad U=-\operatorname{triu}(A,1).
+\end{aligned}
+\end{equation}
+La iteraci\'on matricial y su forma de punto fijo son
+\begin{align}
+(D-L)\mathbf{T}^{(k+1)}&=U\mathbf{T}^{(k)}+\mathbf{b},\\
+\mathbf{T}^{(k+1)}&=T_{GS}\mathbf{T}^{(k)}+\mathbf{c}_{GS},\\
+T_{GS}&=(D-L)^{-1}U,\qquad \mathbf{c}_{GS}=(D-L)^{-1}\mathbf{b}.
+\label{eq:gs}
+\end{align}
+La inversa expresa la formulaci\'on, pero el c\'odigo resuelve el sistema triangular disperso $(D-L)\mathbf{z}=U\mathbf{T}^{(k)}+\mathbf{b}$ sin formarla. En el barrido lexicogr\'afico, cada componente satisface
+\begin{equation}
+T_i^{(k+1)}=\frac{b_i-\sum_{j<i}a_{ij}T_j^{(k+1)}-\sum_{j>i}a_{ij}T_j^{(k)}}{a_{ii}}.
+\end{equation}
+Para la matriz de Dirichlet del problema, la simetr\'ia y la definitud positiva se comprobaron mediante factorizaci\'on de Cholesky; adem\'as, el stencil interior es estrictamente diagonal dominante. La dominancia diagonal estricta es suficiente, pero no necesaria, para converger: el criterio general para la iteraci\'on estacionaria es $\rho(T_{GS})<1$, por lo que su ausencia por s\'i sola no implica divergencia. En los resultados se conserva como criterio principal el residuo com\'un con CG. Como indicador complementario se registra el error entre aproximaciones sucesivas $E_k=\|\mathbf{T}^{(k+1)}-\mathbf{T}^{(k)}\|_\infty/\|\mathbf{T}^{(k+1)}\|_\infty$; no controla la parada.
+
+\subsubsection{M\'etodo de Gradiente Conjugado}
+
+Gradiente Conjugado (CG) resuelve~\eqref{eq:sistema-discreto} cuando $A$ es sim\'etrica definida positiva (SPD). Esta condici\'on hace que $\langle u,v\rangle_A=u^TAv$ sea un producto interno y que la funci\'on cuadr\'atica estrictamente convexa
+\begin{equation}
+\begin{aligned}
+f(\mathbf{T})&=\tfrac12\mathbf{T}^TA\mathbf{T}-\mathbf{b}^T\mathbf{T},\\
+\nabla f(\mathbf{T})&=A\mathbf{T}-\mathbf{b},\\
+\mathbf{r}&=\mathbf{b}-A\mathbf{T}=-\nabla f(\mathbf{T}).
+\end{aligned}
+\end{equation}
+tenga como minimizador \textit{\'unico} la soluci\'on del sistema. El gradiente indica el ascenso local m\'as pronunciado y el residuo apunta en sentido opuesto. A diferencia del descenso por gradiente, que usa solo el gradiente actual, CG combina el residuo con la direcci\'on anterior para construir direcciones conjugadas respecto de $A$.
+
+Con $\mathbf{T}_0$ dado, se inicializa $\mathbf{r}_0=\mathbf{b}-A\mathbf{T}_0$ y $\mathbf{p}_0=\mathbf{r}_0$. En cada iteraci\'on se calcula
+\begin{align}
+\alpha_k&=\frac{\mathbf{r}_k^T\mathbf{r}_k}{\mathbf{p}_k^TA\mathbf{p}_k}, &
+\mathbf{T}_{k+1}&=\mathbf{T}_k+\alpha_k\mathbf{p}_k,\\
+\mathbf{r}_{k+1}&=\mathbf{r}_k-\alpha_kA\mathbf{p}_k, &
+\beta_k&=\frac{\mathbf{r}_{k+1}^T\mathbf{r}_{k+1}}{\mathbf{r}_k^T\mathbf{r}_k},\\
+\mathbf{p}_{k+1}&=\mathbf{r}_{k+1}+\beta_k\mathbf{p}_k.
+\end{align}
+El escalar $\alpha_k$ fija el paso, el residuo mide el desbalance algebraico y $\beta_k$ incorpora la nueva informaci\'on en la direcci\'on conjugada. El c\'odigo implementa estas recurrencias con productos dispersos y no usa \texttt{pcg}. Las direcciones conjugadas reducen la repetici\'on de correcciones ya realizadas; en el caso base CG alcanz\'o la tolerancia en menos iteraciones que GS, resultado de esta matriz, malla e implementaci\'on y no una garant\'ia universal \citep{zhang2001,xu2011poisson}.
+
+\subsection{Implementaci\'on y procedimiento computacional}
+
+La implementaci\'on se organiz\'o en funciones MATLAB para cargar la configuraci\'on, ensamblar el modelo, ejecutar los solucionadores, realizar experimentos y exportar resultados. La condici\'on inicial se fij\'o uniformemente en $25\ ^\circ$C en los nodos interiores y coincidi\'o con el valor prescrito en el contorno. Se usaron la misma $A$, $\mathbf{b}$ y $\mathbf{T}_0$ para GS y CG. La tolerancia se defini\'o mediante el residuo relativo y se acept\'o convergencia cuando $\rho_k\leq10^{-8}$:
+\begin{align}
+\rho_k&=\frac{\|\mathbf{b}-A\mathbf{T}_k\|_2}{\|\mathbf{b}\|_2},
+\label{eq:residuo-relativo}\\
+\rho_k&\leq10^{-8}.
+\end{align}
+Se conserv\'o una soluci\'on directa dispersa como referencia para contrastar los resultados iterativos, sin sustituir las implementaciones expl\'icitas de GS y CG. Para describir la convergencia se registraron residuos y estados espaciales representativos; las iteraciones son conteos algebraicos y no instantes de calentamiento f\'isico.
+
+Los tiempos se midieron tras una corrida de calentamiento y con tres repeticiones para cada m\'etodo y configuraci\'on. Se registraron los tiempos individuales, la mediana, la desviaci\'on est\'andar, el rango intercuart\'ilico, las iteraciones, el residuo final y el tama\~no del sistema. Los tiempos caracterizan el equipo y la sesi\'on de ejecuci\'on; no expresan tiempo f\'isico ni una raz\'on universal de rendimiento. MATLAB export\'o tablas y metadatos; los scripts Python leyeron esas exportaciones para generar figuras, sin resolver nuevamente el modelo.
+
+\subsection{Dise\~no experimental}
+
+El escenario base emple\'o la malla $49\times33$ y compar\'o el campo, la temperatura m\'axima y las soluciones de GS y CG con la referencia directa. El estudio de refinamiento se realiz\'o con mallas de $25\times17$, $49\times33$, $97\times65$ y $193\times129$ nodos; se registraron inc\'ognitas, iteraciones, residuos y tiempos. El indicador espacial se calcul\'o como la diferencia nodal m\'axima entre la soluci\'on directa de una malla y la interpolaci\'on bilineal de la siguiente malla m\'as fina. Esta diferencia describe el cambio observado con la resoluci\'on, no un error exacto respecto de una soluci\'on anal\'itica.
+
+El an\'alisis de sensibilidad vari\'o por separado la potencia de CPU entre $0$ y $18$ W y la de GPU entre $0$ y $27$ W, con factores $0$, $0.5$, $1$ y $1.5$, manteniendo fija la otra fuente. Las pruebas de estr\'es evaluaron tolerancias de $10^{-6}$, $10^{-8}$, $10^{-10}$ y $10^{-12}$, un caso con las dos potencias multiplicadas por $1000$ y otro con potencia negativa de CPU. Los dos casos extremos son pruebas algebraicas deliberadamente no f\'isicas, no escenarios t\'ermicos realistas.
+
+\subsection{Validaci\'on}
+
+La verificaci\'on comprob\'o las condiciones de Dirichlet, el alineamiento de las fuentes, la potencia discretizada, la simetr\'ia de $A$, su definitud positiva mediante factorizaci\'on de Cholesky dispersa, la finitud de los residuos y la concordancia con la referencia directa. Tambi\'en revis\'o la linealidad respecto de las potencias, el cambio entre mallas y la detecci\'on del l\'imite de iteraciones. Se distingui\'o el error algebraico controlado por~\eqref{eq:residuo-relativo}, el cambio debido a la discretizaci\'on espacial y las limitaciones f\'isicas de las hip\'otesis. La validaci\'on del c\'odigo no implica validaci\'on experimental de temperaturas de una laptop real.
