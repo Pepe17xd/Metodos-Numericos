@@ -1,0 +1,29 @@
+{
+  "experiment_id": "numerical_stress",
+  "geometry": {
+    "Lx_m": 0.24,
+    "Ly_m": 0.16,
+    "sources": [
+      {
+        "name": "CPU",
+        "x_m": 0.04,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      },
+      {
+        "name": "GPU",
+        "x_m": 0.16,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      }
+    ]
+  },
+  "timing_method": {
+    "warmup_runs": 1,
+    "measured_runs": 3,
+    "dispersion": "sample standard deviation of solver-reported elapsed seconds"
+  },
+  "warning": "Extreme and negative source powers are deliberately nonphysical numerical probes, not laptop estimates."
+}

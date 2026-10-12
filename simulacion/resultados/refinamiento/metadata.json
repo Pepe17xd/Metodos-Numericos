@@ -1,0 +1,25 @@
+{
+  "experiment_id": "mesh_refinement",
+  "comparison": "max nodal absolute difference: each direct coarse field versus bilinear interpolation of next finer direct field",
+  "geometry": {
+    "Lx_m": 0.24,
+    "Ly_m": 0.16,
+    "sources": [
+      {
+        "name": "CPU",
+        "x_m": 0.04,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      },
+      {
+        "name": "GPU",
+        "x_m": 0.16,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      }
+    ]
+  },
+  "tolerance": 1E-8
+}

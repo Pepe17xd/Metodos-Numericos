@@ -1,0 +1,30 @@
+{
+  "experiment_id": "source_sensitivity",
+  "geometry": {
+    "Lx_m": 0.24,
+    "Ly_m": 0.16,
+    "sources": [
+      {
+        "name": "CPU",
+        "x_m": 0.04,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      },
+      {
+        "name": "GPU",
+        "x_m": 0.16,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      }
+    ]
+  },
+  "scales": [
+    0,
+    0.5,
+    1,
+    1.5
+  ],
+  "procedure": "Vary CPU or GPU power independently; hold the other source and all other parameters fixed."
+}

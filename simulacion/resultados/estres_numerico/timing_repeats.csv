@@ -1,0 +1,37 @@
+experiment,solver,nx,ny,unknowns,run_type,repetition,time_s,iterations,relative_residual,status
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,1,0.1170013,1484,9.95180962926739e-07,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,2,0.1205111,1484,9.95180962926739e-07,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,3,0.1163127,1484,9.95180962926739e-07,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,1,0.0027378,106,9.68925404653383e-07,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,2,0.0031411,106,9.68925404653383e-07,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,3,0.002762,106,9.68925404653383e-07,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,1,0.1341757,2145,9.94196185859756e-09,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,2,0.1494966,2145,9.94196185859756e-09,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,3,0.1591493,2145,9.94196185859756e-09,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,1,0.0032017,127,9.28374530186267e-09,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,2,0.0032651,127,9.28374530186267e-09,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,3,0.0032326,127,9.28374530186267e-09,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,1,0.1778863,2806,9.93209891567873e-11,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,2,0.2151891,2806,9.93209891567873e-11,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,3,0.3013998,2806,9.93209891567873e-11,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,1,0.0036019,148,7.42521931744691e-11,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,2,0.0038414,148,7.42521931744691e-11,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,3,0.0039824,148,7.42521931744691e-11,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,1,0.2001169,3466,9.99203890794152e-13,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,2,0.2002152,3466,9.99203890794152e-13,converged
+baseline_tolerance,Gauss-Seidel,49,33,1457,measured,3,0.186805,3466,9.99203890794152e-13,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,1,0.0027088,162,8.9773495178281e-13,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,2,0.0027575,162,8.9773495178281e-13,converged
+baseline_tolerance,Conjugate Gradient,49,33,1457,measured,3,0.0021887,162,8.9773495178281e-13,converged
+extreme_positive_1000x,Gauss-Seidel,49,33,1457,measured,1,0.1373679,2509,9.9667515366227e-09,converged
+extreme_positive_1000x,Gauss-Seidel,49,33,1457,measured,2,0.1460273,2509,9.9667515366227e-09,converged
+extreme_positive_1000x,Gauss-Seidel,49,33,1457,measured,3,0.1655349,2509,9.9667515366227e-09,converged
+extreme_positive_1000x,Conjugate Gradient,49,33,1457,measured,1,0.002414,138,9.97077983728404e-09,converged
+extreme_positive_1000x,Conjugate Gradient,49,33,1457,measured,2,0.0030009,138,9.97077983728404e-09,converged
+extreme_positive_1000x,Conjugate Gradient,49,33,1457,measured,3,0.0022339,138,9.97077983728404e-09,converged
+nonphysical_negative_cpu,Gauss-Seidel,49,33,1457,measured,1,0.1276628,1939,9.96700379336646e-09,converged
+nonphysical_negative_cpu,Gauss-Seidel,49,33,1457,measured,2,0.1241899,1939,9.96700379336646e-09,converged
+nonphysical_negative_cpu,Gauss-Seidel,49,33,1457,measured,3,0.1124969,1939,9.96700379336646e-09,converged
+nonphysical_negative_cpu,Conjugate Gradient,49,33,1457,measured,1,0.0022197,126,8.85242693660627e-09,converged
+nonphysical_negative_cpu,Conjugate Gradient,49,33,1457,measured,2,0.0020613,126,8.85242693660627e-09,converged
+nonphysical_negative_cpu,Conjugate Gradient,49,33,1457,measured,3,0.0031373,126,8.85242693660627e-09,converged

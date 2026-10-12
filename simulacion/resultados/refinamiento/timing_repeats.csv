@@ -1,0 +1,25 @@
+experiment,solver,nx,ny,unknowns,run_type,repetition,time_s,iterations,relative_residual,status
+refinement,Gauss-Seidel,25,17,345,measured,1,0.0140131,572,9.94959948073064e-09,converged
+refinement,Gauss-Seidel,25,17,345,measured,2,0.0168103,572,9.94959948073064e-09,converged
+refinement,Gauss-Seidel,25,17,345,measured,3,0.0160679,572,9.94959948073064e-09,converged
+refinement,Conjugate Gradient,25,17,345,measured,1,0.0008577,64,8.30041967295441e-09,converged
+refinement,Conjugate Gradient,25,17,345,measured,2,0.0007439,64,8.30041967295441e-09,converged
+refinement,Conjugate Gradient,25,17,345,measured,3,0.000661,64,8.30041967295441e-09,converged
+refinement,Gauss-Seidel,49,33,1457,measured,1,0.21775,2145,9.94196185859756e-09,converged
+refinement,Gauss-Seidel,49,33,1457,measured,2,0.2163025,2145,9.94196185859756e-09,converged
+refinement,Gauss-Seidel,49,33,1457,measured,3,0.1945423,2145,9.94196185859756e-09,converged
+refinement,Conjugate Gradient,49,33,1457,measured,1,0.0035801,127,9.28374530186267e-09,converged
+refinement,Conjugate Gradient,49,33,1457,measured,2,0.0040475,127,9.28374530186267e-09,converged
+refinement,Conjugate Gradient,49,33,1457,measured,3,0.0042882,127,9.28374530186267e-09,converged
+refinement,Gauss-Seidel,97,65,5985,measured,1,3.0849623,7983,9.9935258266342e-09,converged
+refinement,Gauss-Seidel,97,65,5985,measured,2,3.110402,7983,9.9935258266342e-09,converged
+refinement,Gauss-Seidel,97,65,5985,measured,3,3.2053579,7983,9.9935258266342e-09,converged
+refinement,Conjugate Gradient,97,65,5985,measured,1,0.0315679,250,8.79100149211009e-09,converged
+refinement,Conjugate Gradient,97,65,5985,measured,2,0.0360018,250,8.79100149211009e-09,converged
+refinement,Conjugate Gradient,97,65,5985,measured,3,0.0356431,250,8.79100149211009e-09,converged
+refinement,Gauss-Seidel,193,129,24257,measured,1,53.7628194,29541,9.99725121712305e-09,converged
+refinement,Gauss-Seidel,193,129,24257,measured,2,52.1895251,29541,9.99725121712305e-09,converged
+refinement,Gauss-Seidel,193,129,24257,measured,3,43.5445662,29541,9.99725121712305e-09,converged
+refinement,Conjugate Gradient,193,129,24257,measured,1,0.2032591,485,9.87549021771049e-09,converged
+refinement,Conjugate Gradient,193,129,24257,measured,2,0.2043248,485,9.87549021771049e-09,converged
+refinement,Conjugate Gradient,193,129,24257,measured,3,0.2128539,485,9.87549021771049e-09,converged

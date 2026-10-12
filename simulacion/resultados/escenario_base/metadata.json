@@ -1,0 +1,55 @@
+{
+  "experiment_id": "scenario_base",
+  "model": "steady_2d_conduction_localized_sources",
+  "geometry": {
+    "Lx_m": 0.24,
+    "Ly_m": 0.16,
+    "sources": [
+      {
+        "name": "CPU",
+        "x_m": 0.04,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      },
+      {
+        "name": "GPU",
+        "x_m": 0.16,
+        "y_m": 0.08,
+        "width_m": 0.04,
+        "height_m": 0.04
+      }
+    ]
+  },
+  "thickness_m": 0.002,
+  "k_W_mK": 50,
+  "boundary_temperature_C": 25,
+  "cpu_power_W": 12,
+  "gpu_power_W": 18,
+  "cpu_q_W_m3": 3.7499999999999995E+6,
+  "gpu_q_W_m3": 5.6249999999999991E+6,
+  "materialized_source_power_W": {
+    "cpu": 12.00000000000002,
+    "gpu": 18.000000000000043
+  },
+  "nx": 49,
+  "ny": 33,
+  "unknowns": 1457,
+  "dx_m": 0.005,
+  "dy_m": 0.005,
+  "tolerance": 1E-8,
+  "assumptions": [
+    "Illustrative team-selected simulation parameters, not experimental measurements.",
+    "Homogeneous isotropic constant conductivity and steady two-dimensional conduction.",
+    "Prescribed temperature on all plate edges; no convection, radiation, or transient effects.",
+    "Each source power is converted to uniform volumetric generation over its rectangular volume."
+  ],
+  "initial_state_C": 25,
+  "matrix_symmetry_relative_error": 0,
+  "timing_method": {
+    "warmup_runs": 1,
+    "measured_runs": 3,
+    "dispersion": "sample standard deviation of solver-reported elapsed seconds"
+  },
+  "matrix_spd_evidence": "Verified by symmetry and successful sparse Cholesky factorization; Dirichlet energy is positive for nonzero interior vectors."
+}
