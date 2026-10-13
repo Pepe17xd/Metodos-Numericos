@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import visualizar
+import graficas
 
 
 class ResultsReaderTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class ResultsReaderTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
         self.root = Path(self.temp_dir.name)
-        for scenario in visualizar.SCENARIOS:
+        for scenario in graficas.SCENARIOS:
             (self.root / scenario).mkdir()
 
     def tearDown(self) -> None:
@@ -36,7 +36,7 @@ class ResultsReaderTests(unittest.TestCase):
             json.dumps({"datasets": {"field": "campo.csv"}}), encoding="utf-8"
         )
 
-        results = visualizar.Results(self.root)
+        results = graficas.Results(self.root)
         field = results.table("escenario_base", "field")
 
         self.assertIsNotNone(field)
@@ -51,8 +51,8 @@ class ResultsReaderTests(unittest.TestCase):
             json.dumps({"datasets": {"field": "../fuera.csv"}}), encoding="utf-8"
         )
 
-        with self.assertRaises(visualizar.InputError):
-            visualizar.Results(self.root)
+        with self.assertRaises(graficas.InputError):
+            graficas.Results(self.root)
 
     def test_reports_incomplete_field_schema(self) -> None:
         """Informa cuando una tabla no permite identificar x, y y temperatura."""
@@ -63,9 +63,9 @@ class ResultsReaderTests(unittest.TestCase):
         (folder / "manifest.json").write_text(
             json.dumps({"datasets": {"field": "campo.csv"}}), encoding="utf-8"
         )
-        results = visualizar.Results(self.root)
+        results = graficas.Results(self.root)
 
-        self.assertIsNone(visualizar.field_data(results))
+        self.assertIsNone(graficas.field_data(results))
         self.assertTrue(any("field_grid" in warning for warning in results.warnings))
 
 

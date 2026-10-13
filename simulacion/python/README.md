@@ -4,7 +4,7 @@ El identificador interno `THERMOPLATE` se conserva en algunos nombres de
 funciones y archivos; el título académico del proyecto está en el README
 principal.
 
-`visualizar.py` genera figuras estáticas a partir de archivos exportados por
+`graficas.py` genera figuras estáticas a partir de archivos exportados por
 MATLAB. Python no ensambla matrices, resuelve el sistema térmico ni modifica los
 resultados. Las figuras se guardan en PNG a 300 dpi y PDF vectorial cuando la
 entrada correspondiente está disponible.
@@ -17,14 +17,14 @@ exportaciones MATLAB existentes:
 
 ```powershell
 python -m pip install -r simulacion/python/requirements.txt
-python simulacion/python/visualizar.py --strict --results simulacion/resultados --output simulacion/figuras
+python simulacion/python/graficas.py --strict --results simulacion/resultados --output simulacion/figuras
 ```
 
 También puede ejecutar el script desde esta carpeta:
 
 ```powershell
 python -m pip install -r requirements.txt
-python visualizar.py --strict --results ..\resultados --output ..\figuras
+python graficas.py --strict --results ..\resultados --output ..\figuras
 ```
 
 Sin argumentos, el lector busca `simulacion/resultados/` y escribe en

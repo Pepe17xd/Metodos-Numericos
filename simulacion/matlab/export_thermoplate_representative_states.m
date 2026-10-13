@@ -27,9 +27,9 @@ function statesTable = export_thermoplate_representative_states(model, canonical
 
         switch canonical.solver
             case 'Gauss-Seidel'
-                replay = solve_thermoplate_gs(model.A, model.b, initialVector, options);
+                replay = metodo_gauss_seidel(model.A, model.b, initialVector, options);
             case 'Conjugate Gradient'
-                replay = solve_thermoplate_cg(model.A, model.b, initialVector, options);
+                replay = metodo_gradiente_conjugado(model.A, model.b, initialVector, options);
             otherwise
                 error('THERMOPLATE:UnknownSolver', ...
                     'No existe una repetición de estados para el método "%s".', canonical.solver);

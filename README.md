@@ -19,16 +19,16 @@ Las diferencias finitas ensamblan el sistema disperso \(A\mathbf{T}=\mathbf{b}\)
 
 ```text
 simulacion/
-  configuracion/   Parámetros del modelo en JSON
-  matlab/          Modelo, ensamblaje, GS, CG, experimentos y validación
-  python/          Visualización de exportaciones y pruebas del lector
-  resultados/      Instantánea versionada de CSV, JSON y MAT exportados por MATLAB
-  figuras/         Instantánea versionada de figuras PNG/PDF generadas por Python
-  pruebas/         Reporte JSON de validación MATLAB
-Latex/             Paper y fuentes LaTeX
+  00_Proyecto_Principal.mlx  Laboratorio guiado: físico -> ecuación -> A*x=b -> GS -> CG -> resultados
+  00_Proyecto_Principal.m    Misma secuencia en formato de script para ejecución por lotes
+  matlab/                    Funciones breves de modelo, ensamblaje, métodos, experimentos y validación
+  python/graficas.py         Figuras a partir de exportaciones MATLAB; no resuelve el modelo
+  resultados/                CSV, JSON y MAT exportados por MATLAB
+  figuras/                   Figuras PNG/PDF generadas desde esas exportaciones
+  pruebas/                   Reporte JSON de validación de MATLAB
 ```
 
-El Live Script académico principal es `simulacion/matlab/01_escenario_base.mlx`. Explica el modelo, el stencil, un ejemplo reducido de \(A\) y \(b\), ambos métodos y los criterios de convergencia; al final ejecuta el flujo completo y exporta los datos. `02_experimentos_completos.mlx` ofrece el lanzador separado para repetir los experimentos.
+Abra primero `simulacion/00_Proyecto_Principal.mlx`. El laboratorio sigue el orden del curso: problema físico, ecuación del calor, diferencias finitas, ejemplo de \(A\mathbf{x}=\mathbf{b}\), Gauss--Seidel, Gradiente Conjugado, comparación y exportación para Python. Las funciones de `matlab/` mantienen cada responsabilidad visible y usan matrices dispersas; no forman inversas ni llaman a `pcg`.
 
 ## Requisitos
 
@@ -47,7 +47,7 @@ python -m pip install -r simulacion/python/requirements.txt
 Abre el Live Script principal en MATLAB y ejecútalo de principio a fin, o usa el modo batch:
 
 ```powershell
-matlab -batch "matlab.internal.liveeditor.executeAndSave(fullfile(pwd,'simulacion','matlab','01_escenario_base.mlx'));"
+matlab -batch "run(fullfile(pwd,'simulacion','00_Proyecto_Principal.m'));"
 ```
 
 El flujo ejecuta el escenario base, refinamiento de malla, sensibilidad a las potencias, pruebas de tolerancia y exportación. Para correr solo la validación central:
@@ -59,7 +59,7 @@ matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); checks=verify_therm
 Después de MATLAB, genera las gráficas a partir de los archivos exportados:
 
 ```powershell
-python simulacion/python/visualizar.py --strict --results simulacion/resultados --output simulacion/figuras
+python simulacion/python/graficas.py --strict --results simulacion/resultados --output simulacion/figuras
 ```
 
 Las figuras cubren el mapa térmico 2D, la superficie 3D, estados iterativos, residuos, tiempos por refinamiento, sensibilidad de temperatura y pruebas de estrés. Python no resuelve el sistema ni crea datos térmicos. Las pruebas del lector se ejecutan con:

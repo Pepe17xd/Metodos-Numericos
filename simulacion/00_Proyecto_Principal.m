@@ -6,7 +6,7 @@
 clear; clc;
 scriptPath = matlab.desktop.editor.getActiveFilename();
 if isempty(scriptPath)
-    scriptPath = fullfile(pwd,'simulacion','matlab','01_escenario_base.mlx');
+    scriptPath = fullfile(pwd,'simulacion','00_Proyecto_Principal.mlx');
 end
 matlabFolder = fileparts(scriptPath);
 if ~isfile(fullfile(matlabFolder,'load_thermoplate_config.m'))
@@ -35,7 +35,7 @@ disp(cfg)
 % El factor 1/4 multiplica toda la suma. Para Δx y Δy distintos se usan los
 % pesos 1/Δx² y 1/Δy². El ensamblador crea el stencil de cinco puntos para
 % -∇²T=q'''/k. Las incógnitas son los nodos interiores; Dirichlet pasa a b.
-model = build_thermoplate_model(cfg);
+model = discretizacion_matriz(cfg);
 fprintf('Malla: %d x %d nodos; incógnitas: %d; dx=%.4g m; dy=%.4g m\n', ...
     model.nx,model.ny,model.nUnknowns,model.dx,model.dy);
 fprintf('Potencia discretizada: CPU %.12g W; GPU %.12g W\n', ...
@@ -101,8 +101,8 @@ assert(cholFlag==0,'La matriz ensamblada no pasó la comprobación SPD.');
 % la misma matriz, vector y condición inicial.
 baseTimer = tic;
 x_direct = model.A\model.b;
-gs = solve_thermoplate_gs(model.A,model.b,x0,opts);
-cg = solve_thermoplate_cg(model.A,model.b,x0,opts);
+gs = metodo_gauss_seidel(model.A,model.b,x0,opts);
+cg = metodo_gradiente_conjugado(model.A,model.b,x0,opts);
 direct_metrics = thermoplate_metrics(model,x_direct);
 gs_metrics = thermoplate_metrics(model,gs.x);
 cg_metrics = thermoplate_metrics(model,cg.x);
@@ -124,12 +124,12 @@ baseElapsed_s = toc(baseTimer);
 fprintf(['Las exportaciones aparecerán en simulacion/resultados/. ' ...
     'El flujo completo se inicia en la sección siguiente.\n']);
 experimentTimer = tic;
-experimentReport = run_thermoplate_experiments();
+experimentReport = ejecutar_experimentos();
 experimentsElapsed_s = toc(experimentTimer);
 executionEvidence = struct('baseStatus','passed','baseTime_s',baseElapsed_s, ...
     'experimentsStatus','passed','experimentsTime_s',experimentsElapsed_s, ...
-    'experimentScript','simulacion/matlab/01_escenario_base.mlx', ...
-    'command','matlab.internal.liveeditor.executeAndSave(''simulacion/matlab/01_escenario_base.mlx'')');
+    'experimentScript','simulacion/00_Proyecto_Principal.mlx', ...
+    'command','matlab.internal.liveeditor.executeAndSave(''simulacion/00_Proyecto_Principal.mlx'')');
 validationReport = write_thermoplate_validation_report([],[],executionEvidence);
 fprintf('Exportaciones completas: %s\n',experimentReport.baseDirectory);
 fprintf('Validación: %s; tiempo del flujo completo: %.2f s\n', ...

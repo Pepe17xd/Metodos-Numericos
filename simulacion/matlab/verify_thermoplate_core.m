@@ -1,6 +1,6 @@
 function checks = verify_thermoplate_core()
 %VERIFY_THERMOPLATE_CORE Executable checks for assembly and baseline solvers.
-    cfg=load_thermoplate_config(); model=build_thermoplate_model(cfg);
+    cfg=load_thermoplate_config(); model=discretizacion_matriz(cfg);
     [~,flag]=chol(model.A); assert(flag==0,'Matrix failed sparse Cholesky SPD check.');
     assert(model.symmetryError<1e-14,'Matrix is not symmetric to roundoff.');
     assert(abs(model.sourcePower.cpu-cfg.cpu.power)<1e-10,'CPU source power mismatch.');
@@ -11,14 +11,14 @@ function checks = verify_thermoplate_core()
     offgrid.cpu.width=0.037; offgrid.cpu.height=0.037;
     offgrid.gpu.x=0.163; offgrid.gpu.y=0.079;
     offgrid.gpu.width=0.037; offgrid.gpu.height=0.041;
-    offgridModel=build_thermoplate_model(offgrid,cfg.baselineGrid(1),cfg.baselineGrid(2));
+    offgridModel=discretizacion_matriz(offgrid,cfg.baselineGrid(1),cfg.baselineGrid(2));
     assert(abs(offgridModel.sourcePower.cpu-cfg.cpu.power)<1e-10 && ...
         abs(offgridModel.sourcePower.gpu-cfg.gpu.power)<1e-10, ...
         'Off-grid source overlap quadrature failed to preserve input powers.');
     x0=cfg.initialTemperature*ones(model.nUnknowns,1); xd=model.A\model.b;
     opts=struct('tolerance',cfg.tolerance,'maxIterations',cfg.maxIterations);
-    gs=solve_thermoplate_gs(model.A,model.b,x0,opts);
-    cg=solve_thermoplate_cg(model.A,model.b,x0,opts);
+    gs=metodo_gauss_seidel(model.A,model.b,x0,opts);
+    cg=metodo_gradiente_conjugado(model.A,model.b,x0,opts);
     assert(strcmp(gs.status,'converged'),'Gauss-Seidel did not converge.');
     assert(strcmp(cg.status,'converged'),'Conjugate Gradient did not converge.');
     assert(norm(gs.x-xd,inf)<2e-5,'Gauss-Seidel disagrees with direct reference.');
@@ -31,11 +31,11 @@ function checks = verify_thermoplate_core()
     assert(max(abs(fld.T_C(edge)-cfg.Tb))<1e-12,'Dirichlet boundary check failed.');
     zero=cfg; zero.cpu.power=0; zero.gpu.power=0;
     cpu=cfg; cpu.gpu.power=0; gpu=cfg; gpu.cpu.power=0;
-    mz=build_thermoplate_model(zero); mc=build_thermoplate_model(cpu); mg=build_thermoplate_model(gpu);
+    mz=discretizacion_matriz(zero); mc=discretizacion_matriz(cpu); mg=discretizacion_matriz(gpu);
     tz=mz.A\mz.b; tc=mc.A\mc.b; tg=mg.A\mg.b;
     assert(norm(xd-(tc+tg-tz),inf)<1e-10,'Temperature response is not linear in source powers.');
     failOpts=struct('tolerance',1e-14,'maxIterations',1);
-    failed=solve_thermoplate_cg(model.A,model.b,x0,failOpts);
+    failed=metodo_gradiente_conjugado(model.A,model.b,x0,failOpts);
     assert(~strcmp(failed.status,'converged'),'Nonconvergence case was not detected.');
     checks=struct('passed',true,'nx',model.nx,'ny',model.ny, ...
         'unknowns',model.nUnknowns,'symmetry_relative_error',model.symmetryError, ...

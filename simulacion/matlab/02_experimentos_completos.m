@@ -3,5 +3,5 @@
 % Iteration runtime is computational cost, not physical heating time.
 clear; clc;
 addpath(fileparts(mfilename('fullpath')));
-report = run_thermoplate_experiments();
+report = ejecutar_experimentos();
 disp(report);

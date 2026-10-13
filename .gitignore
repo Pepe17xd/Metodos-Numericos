@@ -16,24 +16,10 @@ codegen/
 /simulacion/documentacion/
 /simulacion/python/figuras/
 
-# Keep the paper source and final paper; exclude LaTeX build output and poster.
+# Academic deliverables stay local: only reproducible simulation assets belong
+# in the remote repository.
 /Latex/
-!/Latex/
-/Latex/*
-!/Latex/main.tex
-!/Latex/MN P2 Grupo 4.pdf
-!/Latex/bibliografia/
-!/Latex/config/
-!/Latex/imagenes/
-!/Latex/secciones/
-/Latex/bibliografia/*
-!/Latex/bibliografia/main.bib
-/Latex/config/*
-!/Latex/config/*.tex
-/Latex/imagenes/*
-!/Latex/imagenes/logo_utec.png
-/Latex/secciones/*
-!/Latex/secciones/*.tex
+/documentacion_local/
 
 # Temporary local QA output
 tmp/

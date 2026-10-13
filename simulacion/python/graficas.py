@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render static figures from MATLAB-exported THERMOPLATE results.
+"""Genera figuras desde resultados THERMOPLATE exportados por MATLAB.
 
 This program is deliberately a reader/plotter: it never assembles or solves the
 physical model. See README.md for the accepted export schema and CLI examples.
