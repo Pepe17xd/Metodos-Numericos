@@ -1,5 +1,5 @@
-function statesTable = export_thermoplate_representative_states(model, canonicalResults, outputPath)
-%EXPORT_THERMOPLATE_REPRESENTATIVE_STATES Export initial, middle, and final states.
+function statesTable = exportar_estados_representativos(model, canonicalResults, outputPath)
+%EXPORTAR_ESTADOS_REPRESENTATIVOS Exporta estados inicial, medio y final.
 %   Repeats each explicit solver from the same uniform initial condition,
 %   with its canonical iteration count as the limit. The midpoint checkpoint
 %   is therefore relative to the actual run length, not the configured limit.

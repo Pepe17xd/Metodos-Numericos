@@ -1,5 +1,5 @@
-function field = thermoplate_field(model, interior)
-%THERMOPLATE_FIELD Reconstruct full nodal temperature and source fields.
+function field = campo_temperatura(model, interior)
+%CAMPO_TEMPERATURA Reconstruye el campo nodal completo de temperatura.
     T=model.cfg.Tb*ones(model.ny,model.nx);
     T(2:end-1,2:end-1)=reshape(interior,model.ny-2,model.nx-2);
     q=zeros(model.ny,model.nx);

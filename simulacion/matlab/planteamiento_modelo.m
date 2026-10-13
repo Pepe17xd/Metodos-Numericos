@@ -1,5 +1,5 @@
-function cfg = load_thermoplate_config(path)
-%LOAD_THERMOPLATE_CONFIG Read shared JSON assumptions and validate them.
+function cfg = planteamiento_modelo(path)
+%PLANTEAMIENTO_MODELO Lee y valida los parámetros físicos del problema.
     if nargin<1 || isempty(path)
         here=fileparts(mfilename('fullpath'));
         path=fullfile(here,'..','configuracion','modelo_base.json');
@@ -19,6 +19,6 @@ function cfg = load_thermoplate_config(path)
         'maxIterations',raw.solver.max_iterations, ...
         'initialTemperature',raw.plate.boundary_temperature_C, ...
         'checkpointFractions',[0.01 0.1 0.5 1]);
-    cfg=thermoplate_config(o);
+    cfg=configuracion_modelo(o);
     cfg.configPath=path; cfg.assumptions=raw.assumptions; cfg.units=raw.units;
 end

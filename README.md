@@ -53,7 +53,7 @@ matlab -batch "run(fullfile(pwd,'simulacion','00_Proyecto_Principal.m'));"
 El flujo ejecuta el escenario base, refinamiento de malla, sensibilidad a las potencias, pruebas de tolerancia y exportación. Para correr solo la validación central:
 
 ```powershell
-matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); checks=verify_thermoplate_core(); disp(checks); assert(checks.passed);"
+matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); checks=validar_simulacion(); disp(checks); assert(checks.passed);"
 ```
 
 Después de MATLAB, genera las gráficas a partir de los archivos exportados:

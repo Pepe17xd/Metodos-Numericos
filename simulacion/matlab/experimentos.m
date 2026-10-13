@@ -1,9 +1,9 @@
-function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
-%EJECUTAR_EXPERIMENTOS Ejecuta caso base, refinamiento, sensibilidad y estrés.
+function report = experimentos(configPath, outputRoot, timingOptions)
+%EXPERIMENTOS Ejecuta caso base, refinamiento, sensibilidad y estrés.
 %   Optional TIMINGOPTIONS fields are warmupRuns and measuredRuns. Each
 %   measured run starts from the same initial vector; its solution is not
 %   used to replace the canonical solution/history calculated below.
-%   Ejemplo: addpath('simulacion/matlab'); ejecutar_experimentos
+%   Ejemplo: addpath('simulacion/matlab'); experimentos
     if nargin<1 || isempty(configPath)
         configPath=fullfile(fileparts(mfilename('fullpath')),'..','configuracion','modelo_base.json');
     end
@@ -12,7 +12,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     end
     if nargin<3 || isempty(timingOptions), timingOptions=struct(); end
     timingOptions=validate_timing_options(timingOptions);
-    cfg=load_thermoplate_config(configPath);
+    cfg=planteamiento_modelo(configPath);
     baseDir=fullfile(outputRoot,'escenario_base'); convDir=fullfile(outputRoot,'convergencia');
     refDir=fullfile(outputRoot,'refinamiento');
     senDir=fullfile(outputRoot,'sensibilidad'); stressDir=fullfile(outputRoot,'estres_numerico');
@@ -32,12 +32,12 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
         "base",timingOptions);
     baseTiming=[directTiming;baseTiming];
     writetable(baseTiming,fullfile(baseDir,'timing_repeats.csv'));
-    mDirect=thermoplate_metrics(model,xDirect);
-    field=thermoplate_field(model,xDirect); writetable(field,fullfile(baseDir,'baseline_field.csv'));
+    mDirect=metricas_temperatura(model,xDirect);
+    field=campo_temperatura(model,xDirect); writetable(field,fullfile(baseDir,'baseline_field.csv'));
     history=history_table({gs,cg}); writetable(history,fullfile(baseDir,'convergence_history.csv'));
-    export_thermoplate_representative_states(model,{gs,cg}, ...
+    exportar_estados_representativos(model,{gs,cg}, ...
         fullfile(baseDir,'representative_states.csv'));
-    mGs=thermoplate_metrics(model,gs.x); mCg=thermoplate_metrics(model,cg.x);
+    mGs=metricas_temperatura(model,gs.x); mCg=metricas_temperatura(model,cg.x);
     summary=summary_table(model,{gs,cg},[mGs.Tmax_C mCg.Tmax_C],baseTimingStats);
     directRow=table("Sparse direct",cfg.tolerance,1,mDirect.relative_residual,NaN, ...
         directTimingStats.median_s,directTime,directTimingStats.median_s, ...
@@ -62,7 +62,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
         'measured_runs',timingOptions.measuredRuns, ...
         'dispersion','sample standard deviation of solver-reported elapsed seconds'), ...
         'matrix_spd_evidence','Verified by symmetry and successful sparse Cholesky factorization; Dirichlet energy is positive for nonzero interior vectors.');
-    write_json_file(fullfile(baseDir,'metadata.json'),metadata);
+    escribir_json(fullfile(baseDir,'metadata.json'),metadata);
     save(fullfile(baseDir,'baseline.mat'),'model','xDirect','gs','cg','metadata','-v7.3');
     write_manifest(baseDir,metadata,struct('field','baseline_field.csv', ...
         'history','convergence_history.csv','states','representative_states.csv', ...
@@ -74,7 +74,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     copyfile(fullfile(baseDir,'representative_states.csv'),fullfile(convDir,'representative_states.csv'),'f');
     convMeta=metadata; convMeta.experiment_id='iterative_convergence';
     convMeta.initial_state_C=cfg.initialTemperature;
-    write_json_file(fullfile(convDir,'metadata.json'),convMeta);
+    escribir_json(fullfile(convDir,'metadata.json'),convMeta);
     write_manifest(convDir,convMeta,struct('history','convergence_history.csv', ...
         'states','representative_states.csv','metadata','metadata.json'));
 
@@ -84,14 +84,14 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     refSol=cell(size(cfg.grids,1),1); refModels=cell(size(cfg.grids,1),1);
     for g=1:size(cfg.grids,1)
         gx=cfg.grids(g,1); gy=cfg.grids(g,2); mm=discretizacion_matriz(cfg,gx,gy);
-        xd=mm.A\mm.b; md=thermoplate_metrics(mm,xd); refSol{g}=reshape_field(mm,xd); refModels{g}=mm;
+        xd=mm.A\mm.b; md=metricas_temperatura(mm,xd); refSol{g}=reshape_field(mm,xd); refModels{g}=mm;
         ini=cfg.initialTemperature*ones(mm.nUnknowns,1);
         gg=metodo_gauss_seidel(mm.A,mm.b,ini,opts);
         cc=metodo_gradiente_conjugado(mm.A,mm.b,ini,opts);
         [meshTiming,meshTimingStats]=benchmark_solvers(mm.A,mm.b,ini,opts, ...
             gx,gy,"refinement",timingOptions);
         refinementTiming=[refinementTiming;meshTiming]; %#ok<AGROW>
-        mg=thermoplate_metrics(mm,gg.x); mc=thermoplate_metrics(mm,cc.x);
+        mg=metricas_temperatura(mm,gg.x); mc=metricas_temperatura(mm,cc.x);
         rows=summary_table(mm,{gg,cc},[mg.Tmax_C mc.Tmax_C],meshTimingStats);
         rows.spatial_max_abs_difference_C=NaN(height(rows),1);
         rows.algebraic_max_abs_error_C=[max(abs(gg.x-xd));max(abs(cc.x-xd))];
@@ -109,7 +109,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     writetable(refinementTiming,fullfile(refDir,'timing_repeats.csv'));
     refMeta=struct('experiment_id','mesh_refinement','comparison','max nodal absolute difference: each direct coarse field versus bilinear interpolation of next finer direct field', ...
         'geometry',metadata.geometry,'tolerance',cfg.tolerance);
-    write_json_file(fullfile(refDir,'metadata.json'),refMeta);
+    escribir_json(fullfile(refDir,'metadata.json'),refMeta);
     refMeta.timing_method=metadata.timing_method;
     write_manifest(refDir,refMeta,struct('mesh','refinement.csv', ...
         'timing','timing_repeats.csv','metadata','metadata.json'));
@@ -121,7 +121,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
         for sourceIdx=1:2
             variant=cfg; sourceName={'cpu','gpu'}; sourceName=sourceName{sourceIdx};
             variant.(sourceName).power=cfg.(sourceName).power*scales(s);
-            sm=discretizacion_matriz(variant,nx,ny); sx=sm.A\sm.b; mt=thermoplate_metrics(sm,sx);
+            sm=discretizacion_matriz(variant,nx,ny); sx=sm.A\sm.b; mt=metricas_temperatura(sm,sx);
             sensitivity=[sensitivity;table(string(sourceName),scales(s),variant.cpu.power,variant.gpu.power, ...
                 mt.Tmax_C,mt.hotspot_x_m,mt.hotspot_y_m,mt.relative_residual, ...
                 'VariableNames',{'varied_source','scale','cpu_power_W','gpu_power_W','Tmax_C', ...
@@ -131,7 +131,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     writetable(sensitivity,fullfile(senDir,'sensitivity.csv'));
     senMeta=struct('experiment_id','source_sensitivity','geometry',metadata.geometry, ...
         'scales',[scales],'procedure','Vary CPU or GPU power independently; hold the other source and all other parameters fixed.');
-    write_json_file(fullfile(senDir,'metadata.json'),senMeta);
+    escribir_json(fullfile(senDir,'metadata.json'),senMeta);
     write_manifest(senDir,senMeta,struct('sensitivity','sensitivity.csv','metadata','metadata.json'));
 
     % Scenario 5: tolerance sweep plus explicitly labelled extreme and
@@ -165,7 +165,7 @@ function report = ejecutar_experimentos(configPath, outputRoot, timingOptions)
     stressMeta=struct('experiment_id','numerical_stress','geometry',metadata.geometry, ...
         'timing_method',metadata.timing_method, ...
         'warning','Extreme and negative source powers are deliberately nonphysical numerical probes, not laptop estimates.');
-    write_json_file(fullfile(stressDir,'metadata.json'),stressMeta);
+    escribir_json(fullfile(stressDir,'metadata.json'),stressMeta);
     write_manifest(stressDir,stressMeta,struct('stress','stress.csv', ...
         'timing','timing_repeats.csv','metadata','metadata.json'));
     report=struct('baseDirectory',baseDir,'refinement',refinement,'sensitivity',sensitivity,'stress',stress);
@@ -271,7 +271,7 @@ function write_manifest(folder,metadata,datasets)
     names=fieldnames(datasets); entries=struct();
     for k=1:numel(names), entries.(names{k})=datasets.(names{k}); end
     manifest=struct('experiment_id',metadata.experiment_id,'metadata',metadata,'datasets',entries);
-    write_json_file(fullfile(folder,'manifest.json'),manifest);
+    escribir_json(fullfile(folder,'manifest.json'),manifest);
 end
 function r=stress_row(caseName,tol,s,timing)
     r=table(string(caseName),tol,string(s.solver),string(s.status),s.iterations, ...

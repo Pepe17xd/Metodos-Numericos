@@ -1,10 +1,10 @@
 experiment,solver,nx,ny,unknowns,run_type,repetition,time_s,iterations,relative_residual,status
-base,Sparse direct,49,33,1457,measured,1,0.0028798,1,3.68667025338802e-15,reference
-base,Sparse direct,49,33,1457,measured,2,0.003244,1,3.68667025338802e-15,reference
-base,Sparse direct,49,33,1457,measured,3,0.0033031,1,3.68667025338802e-15,reference
-base,Gauss-Seidel,49,33,1457,measured,1,0.2027163,2145,9.94196185859756e-09,converged
-base,Gauss-Seidel,49,33,1457,measured,2,0.2053641,2145,9.94196185859756e-09,converged
-base,Gauss-Seidel,49,33,1457,measured,3,0.2131411,2145,9.94196185859756e-09,converged
-base,Conjugate Gradient,49,33,1457,measured,1,0.0046996,127,9.28374530186267e-09,converged
-base,Conjugate Gradient,49,33,1457,measured,2,0.005194,127,9.28374530186267e-09,converged
-base,Conjugate Gradient,49,33,1457,measured,3,0.004817,127,9.28374530186267e-09,converged
+base,Sparse direct,49,33,1457,measured,1,0.0033211,1,3.68667025338802e-15,reference
+base,Sparse direct,49,33,1457,measured,2,0.0018846,1,3.68667025338802e-15,reference
+base,Sparse direct,49,33,1457,measured,3,0.0021409,1,3.68667025338802e-15,reference
+base,Gauss-Seidel,49,33,1457,measured,1,0.1462906,2145,9.94196185859756e-09,converged
+base,Gauss-Seidel,49,33,1457,measured,2,0.1432949,2145,9.94196185859756e-09,converged
+base,Gauss-Seidel,49,33,1457,measured,3,0.1349678,2145,9.94196185859756e-09,converged
+base,Conjugate Gradient,49,33,1457,measured,1,0.0026093,127,9.28374530186267e-09,converged
+base,Conjugate Gradient,49,33,1457,measured,2,0.005561,127,9.28374530186267e-09,converged
+base,Conjugate Gradient,49,33,1457,measured,3,0.0028379,127,9.28374530186267e-09,converged

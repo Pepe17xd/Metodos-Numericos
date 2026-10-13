@@ -1,6 +1,6 @@
-function checks = verify_thermoplate_core()
-%VERIFY_THERMOPLATE_CORE Executable checks for assembly and baseline solvers.
-    cfg=load_thermoplate_config(); model=discretizacion_matriz(cfg);
+function checks = validar_simulacion()
+%VALIDAR_SIMULACION Comprueba ensamblaje y solucionadores del caso base.
+    cfg=planteamiento_modelo(); model=discretizacion_matriz(cfg);
     [~,flag]=chol(model.A); assert(flag==0,'Matrix failed sparse Cholesky SPD check.');
     assert(model.symmetryError<1e-14,'Matrix is not symmetric to roundoff.');
     assert(abs(model.sourcePower.cpu-cfg.cpu.power)<1e-10,'CPU source power mismatch.');
@@ -26,7 +26,7 @@ function checks = verify_thermoplate_core()
     assert(all(isfinite(gs.x))&&all(isfinite(cg.x)),'Iterative field has nonfinite values.');
     assert(isfinite(gs.relativeStepError), ...
         'Gauss-Seidel complementary successive-approximation error is not finite.');
-    fld=thermoplate_field(model,xd); edge=fld.x_m==0 | fld.x_m==cfg.Lx | ...
+    fld=campo_temperatura(model,xd); edge=fld.x_m==0 | fld.x_m==cfg.Lx | ...
         fld.y_m==0 | fld.y_m==cfg.Ly;
     assert(max(abs(fld.T_C(edge)-cfg.Tb))<1e-12,'Dirichlet boundary check failed.');
     zero=cfg; zero.cpu.power=0; zero.gpu.power=0;
@@ -49,5 +49,5 @@ function checks = verify_thermoplate_core()
         'boundary_max_error_C',max(abs(fld.T_C(edge)-cfg.Tb)), ...
         'linearity_max_error_C',norm(xd-(tc+tg-tz),inf), ...
         'nonconvergence_status',failed.status, ...
-        'direct_Tmax_C',thermoplate_metrics(model,xd).Tmax_C);
+        'direct_Tmax_C',metricas_temperatura(model,xd).Tmax_C);
 end

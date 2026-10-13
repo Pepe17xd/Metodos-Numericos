@@ -4,17 +4,17 @@
 % no mediciones de una computadora.
 
 clear; clc;
-scriptPath = matlab.desktop.editor.getActiveFilename();
-if isempty(scriptPath)
-    scriptPath = fullfile(pwd,'simulacion','00_Proyecto_Principal.mlx');
+% Las rutas se obtienen desde este archivo: no dependen de la carpeta actual.
+ruta_script = mfilename('fullpath');
+if isempty(ruta_script)
+    ruta_simulacion = fullfile(pwd,'simulacion');
+else
+    ruta_simulacion = fileparts(ruta_script);
 end
-matlabFolder = fileparts(scriptPath);
-if ~isfile(fullfile(matlabFolder,'load_thermoplate_config.m'))
-    matlabFolder = fullfile(pwd,'simulacion','matlab');
-end
-assert(isfile(fullfile(matlabFolder,'load_thermoplate_config.m')), ...
-    'Open this Live Script from the project or start MATLAB at the project root.');
-addpath(matlabFolder);
+ruta_matlab = fullfile(ruta_simulacion,'matlab');
+assert(isfile(fullfile(ruta_matlab,'planteamiento_modelo.m')), ...
+    'Abra 00_Proyecto_Principal.mlx desde una copia completa del repositorio.');
+addpath(ruta_matlab);
 
 %% 1. Problema físico y parámetros
 % Se estudia una placa homogénea e isótropa en estado estacionario. El calor
@@ -26,7 +26,7 @@ addpath(matlabFolder);
 % CPU y GPU se representan como dos regiones con generación volumétrica
 % uniforme. modelo_base.json contiene dimensiones, conductividad, espesor,
 % temperatura de borde, huellas, potencias y mallas del estudio.
-cfg = load_thermoplate_config();
+cfg = planteamiento_modelo();
 disp(cfg)
 
 %% 2. Diferencias finitas y ensamblaje disperso
@@ -103,17 +103,7 @@ baseTimer = tic;
 x_direct = model.A\model.b;
 gs = metodo_gauss_seidel(model.A,model.b,x0,opts);
 cg = metodo_gradiente_conjugado(model.A,model.b,x0,opts);
-direct_metrics = thermoplate_metrics(model,x_direct);
-gs_metrics = thermoplate_metrics(model,gs.x);
-cg_metrics = thermoplate_metrics(model,cg.x);
-comparison = table( ...
-    ["Directa dispersa";string(gs.solver);string(cg.solver)], ...
-    [1;gs.iterations;cg.iterations], ...
-    [norm(model.b-model.A*x_direct)/norm(model.b); ...
-     gs.relativeResidual;cg.relativeResidual], ...
-    [direct_metrics.Tmax_C;gs_metrics.Tmax_C;cg_metrics.Tmax_C], ...
-    [NaN;gs.relativeStepError;NaN], ...
-    'VariableNames',{'metodo','iteraciones','residuo_relativo','Tmax_C','E_k_GS'});
+comparison = comparacion_metodos(model,x_direct,gs,cg);
 disp(comparison)
 baseElapsed_s = toc(baseTimer);
 
@@ -124,13 +114,13 @@ baseElapsed_s = toc(baseTimer);
 fprintf(['Las exportaciones aparecerán en simulacion/resultados/. ' ...
     'El flujo completo se inicia en la sección siguiente.\n']);
 experimentTimer = tic;
-experimentReport = ejecutar_experimentos();
+experimentReport = experimentos();
 experimentsElapsed_s = toc(experimentTimer);
 executionEvidence = struct('baseStatus','passed','baseTime_s',baseElapsed_s, ...
     'experimentsStatus','passed','experimentsTime_s',experimentsElapsed_s, ...
     'experimentScript','simulacion/00_Proyecto_Principal.mlx', ...
     'command','matlab.internal.liveeditor.executeAndSave(''simulacion/00_Proyecto_Principal.mlx'')');
-validationReport = write_thermoplate_validation_report([],[],executionEvidence);
+validationReport = generar_reporte_validacion([],[],executionEvidence);
 fprintf('Exportaciones completas: %s\n',experimentReport.baseDirectory);
 fprintf('Validación: %s; tiempo del flujo completo: %.2f s\n', ...
     validationReport.validation_status,experimentsElapsed_s);

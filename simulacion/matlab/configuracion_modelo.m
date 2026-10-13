@@ -1,8 +1,8 @@
-function cfg = thermoplate_config(overrides)
-%THERMOPLATE_CONFIG Shared default assumptions for the steady plate model.
+function cfg = configuracion_modelo(ajustes)
+%CONFIGURACION_MODELO Valida los parámetros del modelo térmico.
 % SI units are used except temperature, reported in degC.  Parameters are
 % illustrative simulation assumptions, not measurements of a laptop.
-    if nargin < 1 || isempty(overrides), overrides = struct(); end
+    if nargin < 1 || isempty(ajustes), ajustes = struct(); end
     cfg = struct( ...
         'Lx',0.24,'Ly',0.16,'thickness',0.002,'k',50,'Tb',25, ...
         'cpu',struct('x',0.04,'y',0.08,'width',0.04,'height',0.04,'power',12), ...
@@ -10,7 +10,7 @@ function cfg = thermoplate_config(overrides)
         'grids',[25 17;49 33;97 65;193 129], ...
         'baselineGrid',[49 33],'tolerance',1e-8,'maxIterations',200000, ...
         'initialTemperature',25,'checkpointFractions',[0.01 0.1 0.5 1]);
-    cfg = merge_struct(cfg,overrides);
+    cfg = merge_struct(cfg,ajustes);
     validate_config(cfg);
 end
 
