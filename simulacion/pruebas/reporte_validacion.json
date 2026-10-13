@@ -8,13 +8,13 @@
     "script": "simulacion/00_Proyecto_Principal.mlx",
     "status": "passed",
     "time_s": 1.0465374,
-    "command": "matlab.internal.liveeditor.executeAndSave('simulacion/matlab/00_Proyecto_Principal.mlx')"
+    "command": "matlab.internal.liveeditor.executeAndSave('simulacion/00_Proyecto_Principal.mlx')"
   },
   "experiment_execution": {
-    "script": "not_recorded",
+    "script": "simulacion/00_Proyecto_Principal.mlx",
     "status": "passed",
     "time_s": 165.9798321,
-    "command": "matlab.internal.liveeditor.executeAndSave('simulacion/matlab/00_Proyecto_Principal.mlx')"
+    "command": "matlab.internal.liveeditor.executeAndSave('simulacion/00_Proyecto_Principal.mlx')"
   },
   "full_experiment_mlx_execution": {
     "script": "simulacion/00_Proyecto_Principal.mlx",
