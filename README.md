@@ -32,7 +32,7 @@ Abra primero `simulacion/00_Proyecto_Principal.mlx`. El laboratorio sigue el ord
 
 ## Requisitos
 
-- MATLAB R2025a o posterior para resolver y validar el modelo.
+- MATLAB R2025a Update 1 o posterior para resolver y validar el modelo. La validación incluida se ejecutó con R2025a Update 1.
 - Python 3.10 o posterior, NumPy, Pandas y Matplotlib para visualizar las exportaciones.
 - Git para descargar el proyecto.
 
@@ -54,6 +54,12 @@ El flujo ejecuta el escenario base, refinamiento de malla, sensibilidad a las po
 
 ```powershell
 matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); checks=validar_simulacion(); disp(checks); assert(checks.passed);"
+```
+
+Para repetir únicamente los experimentos adicionales y actualizar `simulacion/resultados/`:
+
+```powershell
+matlab -batch "addpath(fullfile(pwd,'simulacion','matlab')); experimentos();"
 ```
 
 Después de MATLAB, genera las gráficas a partir de los archivos exportados:
