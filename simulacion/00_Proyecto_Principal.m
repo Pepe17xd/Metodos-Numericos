@@ -10,25 +10,43 @@
 % Cambie solo modo_completo para ejecutar los estudios largos.
 modo_completo=false;
 
-% Buscamos el repositorio desde la carpeta actual y sus carpetas superiores.
-ruta_busqueda=pwd;
+% Obtenemos la carpeta de este Live Script para que funcione desde cualquier
+% carpeta actual de MATLAB. El fallback permite ejecutar el archivo .m desde
+% la raiz del repositorio sin depender del editor.
 ruta_laboratorio='';
-for nivel=1:8
-    if isfile(fullfile(ruta_busqueda,'simulacion','ejecutar_proyecto.m'))
-        ruta_laboratorio=fullfile(ruta_busqueda,'simulacion');
-        break
-    elseif isfile(fullfile(ruta_busqueda,'ejecutar_proyecto.m')) && ...
-            isfolder(fullfile(ruta_busqueda,'matlab'))
-        ruta_laboratorio=ruta_busqueda;
-        break
+try
+    archivo_activo=matlab.desktop.editor.getActiveFilename();
+    if ~isempty(archivo_activo) && isfile(archivo_activo)
+        carpeta_activa=fileparts(archivo_activo);
+        if isfile(fullfile(carpeta_activa,'ejecutar_proyecto.m')) && ...
+                isfolder(fullfile(carpeta_activa,'matlab'))
+            ruta_laboratorio=carpeta_activa;
+        elseif isfile(fullfile(carpeta_activa,'simulacion','ejecutar_proyecto.m'))
+            ruta_laboratorio=fullfile(carpeta_activa,'simulacion');
+        end
     end
-    ruta_padre=fileparts(ruta_busqueda);
-    if strcmp(ruta_padre,ruta_busqueda), break; end
-    ruta_busqueda=ruta_padre;
+catch
+    % En MATLAB sin escritorio se usa la carpeta actual y sus carpetas padre.
+end
+if isempty(ruta_laboratorio)
+    ruta_busqueda=pwd;
+    for nivel=1:8
+        if isfile(fullfile(ruta_busqueda,'simulacion','ejecutar_proyecto.m'))
+            ruta_laboratorio=fullfile(ruta_busqueda,'simulacion');
+            break
+        elseif isfile(fullfile(ruta_busqueda,'ejecutar_proyecto.m')) && ...
+                isfolder(fullfile(ruta_busqueda,'matlab'))
+            ruta_laboratorio=ruta_busqueda;
+            break
+        end
+        ruta_padre=fileparts(ruta_busqueda);
+        if strcmp(ruta_padre,ruta_busqueda), break; end
+        ruta_busqueda=ruta_padre;
+    end
 end
 assert(~isempty(ruta_laboratorio), ...
-    ['No se encontro el repositorio desde la carpeta actual. Abra MATLAB ' ...
-     'con la carpeta del repositorio en Current Folder y vuelva a presionar Run.']);
+    ['No se encontro el laboratorio. Abra el archivo 00_Proyecto_Principal.mlx ' ...
+     'del repositorio y vuelva a presionar Run.']);
 addpath(ruta_laboratorio);
 addpath(fullfile(ruta_laboratorio,'matlab'));
 cfg=planteamiento_modelo();

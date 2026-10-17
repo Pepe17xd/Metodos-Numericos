@@ -1,4 +1,4 @@
-﻿# Modelación numérica de la distribución térmica en una placa idealizada
+# Modelación numérica de la distribución térmica en una placa idealizada
 
 **Universidad de Ingeniería y Tecnología (UTEC)**  
 **Curso:** CC2104 – Métodos Numéricos  
@@ -22,7 +22,7 @@ No se necesita Git para usar el proyecto:
 2. Extrae el ZIP y abre la carpeta del proyecto en MATLAB.
 3. Abre `simulacion/00_Proyecto_Principal.mlx` y pulsa **Run**.
 
-El modo rápido resuelve el escenario base y muestra las métricas y gráficas esenciales. No necesita archivos de resultados previos, configuración JSON, instalación de paquetes ni toolboxes adicionales. La carpeta actual de MATLAB debe estar en la raíz del repositorio o dentro de ella.
+El modo rápido resuelve el escenario base y muestra las métricas y gráficas esenciales. No necesita archivos de resultados previos, configuración JSON, instalación de paquetes ni toolboxes adicionales. Al ejecutar el Live Script desde el Editor, este localiza sus funciones junto al archivo aunque la carpeta actual de MATLAB sea otra.
 
 Para ejecutar sin Live Editor, abre `simulacion/ejecutar_proyecto.m` y pulsa **Run**.
 
@@ -55,7 +55,6 @@ Estos resultados se recalcularon en MATLAB R2025a Update 1 (25.1.0.2973910) en W
 - `simulacion/ejecutar_proyecto.m`: cálculo compartido por el Live Script y entrada sin Live Editor.
 - `simulacion/matlab/`: discretización, Gauss–Seidel, Gradiente Conjugado, experimentos y validaciones.
 - `simulacion/resultados/`: evidencia numérica, datos y figuras generadas desde MATLAB.
-- `Latex/main.tex` y `Latex/main.pdf`: fuente y versión compilada del paper; sus figuras de resultados se generan en MATLAB.
 - `GUIA_SUSTENTACION.md`: preguntas frecuentes para explicar el modelo y los métodos.
 
 ## Alcance y limitaciones
