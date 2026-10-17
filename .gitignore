@@ -1,33 +1,64 @@
-﻿# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-.pytest_cache/
-
-# MATLAB editor and autosave artifacts
+﻿# MATLAB editor and generated files
 *.asv
 *.m~
 slprj/
 codegen/
 *.autosave
 
-# Academic source documents and prior submissions remain local.
+# Academic source documents provided for reference remain local.
 /simulacion/documentacion/
-/simulacion/python/figuras/
-
-# Academic deliverables stay local: only reproducible simulation assets belong
-# in the remote repository.
-/Latex/
 /documentacion_local/
-
-# Temporary local QA output
-tmp/
-simulacion/python/.qa_figures/
-
-# Local course/source documents and prior submissions; not project deliverables
 /Propuestas/
 /Lineamientos de Proyecto.pdf
 /MN_P1_Grupo_4.pdf
 /Adaptacion_proyecto_metodos_numericos_laptop_termica.pdf
 /ryznykpwwmmc.pdf
+
+# Legacy Python caches from the removed plotting pipeline`r`n/simulacion/python/.qa_figures/`r`n/simulacion/python/__pycache__/`r`n/simulacion/python/tests/__pycache__/`r`n`r`n# LaTeX build files
+/Latex/*.aux
+/Latex/*.bbl
+/Latex/*.bcf
+/Latex/*.blg
+/Latex/*.fdb_latexmk
+/Latex/*.fls
+/Latex/*.log
+/Latex/*.out
+/Latex/*.run.xml
+/Latex/*.spl
+/Latex/*.synctex.gz
+/Latex/*.nav
+/Latex/*.snm
+/Latex/*.toc
+/Latex/*.pdf
+!/Latex/main.pdf
+/Latex/poster/
+/Latex/documentacion_local/
+/Latex/auditoria_*.md
+/Latex/matriz_cumplimiento_rubricas.md
+/Latex/reporte_calidad_visual_compilacion.md
+/Latex/Matlab.mlx
+/Latex/Matlab.asv
+/Latex/mlx_dump.txt
+/Latex/main.bbl-SAVE-ERROR
+/Latex/main.bcf-SAVE-ERROR
+
+# Keep the reproducible paper source, bibliography, configuration and logo.
+/Latex/*
+!/Latex/main.tex
+!/Latex/main.pdf
+!/Latex/bibliografia/
+!/Latex/config/
+!/Latex/secciones/
+!/Latex/imagenes/
+/Latex/bibliografia/*
+!/Latex/bibliografia/main.bib
+/Latex/config/*
+!/Latex/config/*.tex
+/Latex/secciones/*
+!/Latex/secciones/*.tex
+/Latex/imagenes/*
+!/Latex/imagenes/logo_utec.png
+
+# Temporary local QA output
+/tmp/
+

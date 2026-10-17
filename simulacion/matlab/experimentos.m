@@ -1,18 +1,15 @@
-function report = experimentos(configPath, outputRoot, timingOptions)
-%EXPERIMENTOS Ejecuta caso base, refinamiento, sensibilidad y estrés.
+﻿function report = experimentos(outputRoot, timingOptions)
+%EXPERIMENTOS Ejecuta caso base, refinamiento, sensibilidad y estres.
 %   Optional TIMINGOPTIONS fields are warmupRuns and measuredRuns. Each
 %   measured run starts from the same initial vector; its solution is not
 %   used to replace the canonical solution/history calculated below.
 %   Ejemplo: addpath('simulacion/matlab'); experimentos
-    if nargin<1 || isempty(configPath)
-        configPath=fullfile(fileparts(mfilename('fullpath')),'..','configuracion','modelo_base.json');
-    end
-    if nargin<2 || isempty(outputRoot)
+    if nargin<1 || isempty(outputRoot)
         outputRoot=fullfile(fileparts(mfilename('fullpath')),'..','resultados');
     end
-    if nargin<3 || isempty(timingOptions), timingOptions=struct(); end
+    if nargin<2 || isempty(timingOptions), timingOptions=struct(); end
     timingOptions=validate_timing_options(timingOptions);
-    cfg=planteamiento_modelo(configPath);
+    cfg=planteamiento_modelo();
     baseDir=fullfile(outputRoot,'escenario_base'); convDir=fullfile(outputRoot,'convergencia');
     refDir=fullfile(outputRoot,'refinamiento');
     senDir=fullfile(outputRoot,'sensibilidad'); stressDir=fullfile(outputRoot,'estres_numerico');
@@ -280,3 +277,4 @@ function r=stress_row(caseName,tol,s,timing)
         {'case','tol','solver','status','iterations','residual','time_s', ...
         'canonical_time_s','time_median_s','time_std_s','time_iqr_s','timing_repeats'});
 end
+

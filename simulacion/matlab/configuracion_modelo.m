@@ -1,5 +1,5 @@
-function cfg = configuracion_modelo(ajustes)
-%CONFIGURACION_MODELO Valida los parámetros del modelo térmico.
+﻿function cfg = configuracion_modelo(ajustes)
+%CONFIGURACION_MODELO Valida los parÃ¡metros del modelo tÃ©rmico.
 % SI units are used except temperature, reported in degC.  Parameters are
 % illustrative simulation assumptions, not measurements of a laptop.
     if nargin < 1 || isempty(ajustes), ajustes = struct(); end
@@ -9,7 +9,9 @@ function cfg = configuracion_modelo(ajustes)
         'gpu',struct('x',0.16,'y',0.08,'width',0.04,'height',0.04,'power',18), ...
         'grids',[25 17;49 33;97 65;193 129], ...
         'baselineGrid',[49 33],'tolerance',1e-8,'maxIterations',200000, ...
-        'initialTemperature',25,'checkpointFractions',[0.01 0.1 0.5 1]);
+        'initialTemperature',25,'checkpointFractions',[0.01 0.1 0.5 1], ...
+        'assumptions',{{'Homogeneous isotropic plate','Steady two-dimensional conduction', ...
+            'Constant conductivity','Uniform rectangular heat sources','Fixed boundary temperature'}});
     cfg = merge_struct(cfg,ajustes);
     validate_config(cfg);
 end
@@ -70,3 +72,4 @@ function validate_config(c)
         all(c.checkpointFractions>=0 & c.checkpointFractions<=1), ...
         'Checkpoint fractions must be finite values in [0,1].');
 end
+
